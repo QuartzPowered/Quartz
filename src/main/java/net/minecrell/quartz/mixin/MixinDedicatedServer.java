@@ -14,8 +14,8 @@ import java.net.Proxy;
 @Mixin(DedicatedServer.class)
 public abstract class MixinDedicatedServer extends MinecraftServer {
 
-    public MixinDedicatedServer(Proxy p_i46053_1_, File p_i46053_2_) {
-        super(p_i46053_1_, p_i46053_2_);
+    public MixinDedicatedServer(File p_i46054_1_, Proxy p_i46054_2_, File p_i46054_3_) {
+        super(p_i46054_1_, p_i46054_2_, p_i46054_3_);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))

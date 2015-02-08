@@ -10,10 +10,14 @@ buildscript {
             name = 'sonatype'
             url = 'https://oss.sonatype.org/content/repositories/snapshots/'
         }
+        maven {
+            name = 'minecrell'
+            url = 'http://repo.minecrell.net/snapshots'
+        }
     }
 
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecrell:QuartzGradle:0.1-SNAPSHOT'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
     }
 }
@@ -25,28 +29,29 @@ repositories {
     }
 }
 
-apply plugin: QuartzPlugin
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'net.minecrell.quartz'
 apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 mainClassName = 'net.minecrell.quartz.Quartz'
 
+ext {
+    mixinSrg = new File(project.buildDir, "tmp/mixins/mixins.srg")
+    mixinRefMap = new File(project.buildDir, "tmp/mixins/mixins.quartz.refmap.json")
+}
+
 minecraft {
     version = '1.8'
     mappings = 'snapshot_20150207'
+    tweaker = 'net.minecrell.quartz.QuartzTweaker'
 }
 
 dependencies {
     compile 'org.spongepowered:mixin:0.1-SNAPSHOT'
     runtime 'org.ow2.asm:asm-all:5.0.3'
-}
-
-task mixin {
-    ext.srg = "${tasks.mixin.temporaryDir}" + File.separator + 'mixins.srg'
-    ext.refMap = "${tasks.mixin.temporaryDir}" + File.separator + 'mixins.sponge.refmap.json';
 }
 
 shadowJar {
@@ -63,7 +68,7 @@ shadowJar {
 build.dependsOn(shadowJar)
 
 jar {
-    from tasks.mixin.ext.refMap
+    from project.mixinRefMap
 
     manifest {
         attributes(
@@ -72,179 +77,38 @@ jar {
     }
 }
 
-reobf.addExtraSrgFile tasks.mixin.ext.srg
-
-
-tasks.withType(JavaCompile) {
+compileJava {
     options.compilerArgs += [
             '-Xlint:all',
             '-Xlint:-path',
             '-Xlint:-processing',
-            "-AreobfSrgFile=${tasks.reobf.srg}",
-            "-AoutSrgFile=${tasks.mixin.ext.srg}",
-            "-AoutRefMapFile=${tasks.mixin.ext.refMap}" ]
+            "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+            "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}"
+    ]
 
     options.deprecation = true
     options.encoding = 'utf8'
 }
 
 // Copy the current srgs to the build dir so the user doesn't have to go hunting for them
-task copySrgs(type: Copy) {
-    doFirst {
-        delete 'build/srgs'
-    }
+task copySrgs(type: Copy, dependsOn: 'genSrgs') {
+    from plugins.getPlugin('net.minecrell.quartz').delayedFile('{SRG_DIR}')
+
     include '**/*.srg'
-    from tasks.reobf.srg.parentFile
     into 'build/srgs'
 }
 
+setupDecompWorkspace.dependsOn copySrgs
+setupDevWorkspace.dependsOn copySrgs
+
 reobf {
-    reobf(shadowJar.archivePath) {
-        spec -> spec.classpath = configurations.compile
+    addExtraSrgFile project.mixinSrg
+
+    reobf(shadowJar) { spec ->
+        spec.classpath = configurations.compile
     }
 }
-reobf.dependsOn shadowJar
-reobf.addExtraSrgFile tasks.mixin.ext.srg
 
-setupDecompWorkspace.dependsOn copySrgs
-
-import net.minecraftforge.gradle.delayed.DelayedFile
-import net.minecraftforge.gradle.tasks.ProcessJarTask
-import net.minecraftforge.gradle.user.UserBasePlugin
-import net.minecraftforge.gradle.user.UserExtension
-import net.minecraftforge.gradle.tasks.user.reobf.ReobfTask
-import net.minecraftforge.gradle.user.UserConstants
-
-class QuartzPlugin extends UserBasePlugin<UserExtension> {
-
-    private static final String FML_VERSION = '1.8-8.0.27.1027'
-    private static final String FML_CACHE_DIR = '{CACHE_DIR}/minecraft/net/minecraftforge/fml/{FML_VERSION}'
-
-    @Override
-    void applyPlugin() {
-        super.applyPlugin()
-        ((ReobfTask) project.getTasks().getByName("reobf")).setSrg(delayedFile(UserConstants.REOBF_NOTCH_SRG));
-    }
-
-    @Override
-    String getApiName() {
-        'minecraft_merged'
-    }
-
-    @Override
-    protected String getSrcDepName() {
-        'minecraft_merged_src'
-    }
-
-    @Override
-    protected String getBinDepName() {
-        'minecraft_merged_bin'
-    }
-
-    @Override
-    protected boolean hasApiVersion() {
-        false
-    }
-
-    @Override
-    protected String getApiVersion(UserExtension ext) {
-        null
-    }
-
-    @Override
-    protected String getMcVersion(UserExtension ext) {
-        ext.version
-    }
-
-    @Override
-    protected String getApiCacheDir(UserExtension ext) {
-        '{CACHE_DIR}/minecraft/net/minecraft/minecraft_merged/{MC_VERSION}'
-    }
-
-    @Override
-    protected String getSrgCacheDir(UserExtension userExtension) {
-        FML_CACHE_DIR + '/srgs'
-    }
-
-    @Override
-    protected String getUserDevCacheDir(UserExtension userExtension) {
-        FML_CACHE_DIR + '/unpacked'
-    }
-
-    @Override
-    protected String getUserDev() {
-        'net.minecraftforge:fml:{FML_VERSION}'
-    }
-
-    @Override
-    protected String getClientTweaker() {
-        ''
-    }
-
-    @Override
-    protected String getServerTweaker() {
-        'net.minecrell.quartz.QuartzTweaker'
-    }
-
-    @Override
-    protected String getStartDir() {
-        '{CACHE_DIR}/minecraft/net/minecraft_merged/QuartzStart'
-    }
-
-    @Override
-    protected String getClientRunClass() {
-        'net.minecraft.launchwrapper.Launch'
-    }
-
-    @Override
-    protected Iterable<String> getClientRunArgs() {
-        Collections.singletonList("--noCoreSearch")
-    }
-
-    @Override
-    protected String getServerRunClass() {
-        'net.minecraft.launchwrapper.Launch'
-    }
-
-    @Override
-    protected Iterable<String> getServerRunArgs() {
-        getClientRunArgs()
-    }
-
-    @Override
-    protected void configureDeobfuscation(ProcessJarTask processJarTask) {
-
-    }
-
-    @Override
-    protected void doVersionChecks(String s) {
-
-    }
-
-    @Override
-    void applyOverlayPlugin() {
-
-    }
-
-    @Override
-    boolean canOverlayPlugin() {
-        false
-    }
-
-    @Override
-    protected DelayedFile getDevJson() {
-        delayedFile FML_CACHE_DIR + '/unpacked/dev.json'
-    }
-
-    @Override
-    protected UserExtension getOverlayExtension() {
-        null
-    }
-
-    @Override
-    String resolve(String pattern, Project project, UserExtension ext) {
-        pattern = super.resolve(pattern, project, ext)
-        pattern.replace('{FML_VERSION}', FML_VERSION)
-    }
-
+afterEvaluate {
+    tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
 }
