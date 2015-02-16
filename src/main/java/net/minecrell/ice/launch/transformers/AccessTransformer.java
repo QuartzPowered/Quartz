@@ -60,7 +60,7 @@ public class AccessTransformer implements IClassTransformer {
     private final ImmutableMultimap<String, Modifier> modifiers;
 
     public AccessTransformer() throws IOException {
-        this((String) Launch.blackboard.get("quartz.at"));
+        this((String) Launch.blackboard.get("ice.at"));
     }
 
     protected AccessTransformer(String file) throws IOException {
