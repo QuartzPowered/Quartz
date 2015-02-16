@@ -8,7 +8,7 @@ buildscript {
         }
         maven {
             name = 'sonatype'
-            url = 'https://oss.sonatype.org/content/repositories/snapshots/'
+            url = 'https://oss.sonatype.org/content/groups/public'
         }
         maven {
             name = 'minecrell'
@@ -17,26 +17,29 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecrell:QuartzGradle:0.1-SNAPSHOT'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
+        classpath 'net.minecrell:IceGradle:0.1-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        //classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
     }
 }
 
 repositories {
     mavenCentral()
     maven {
-        url 'http://repo.spongepowered.org/maven'
+        name = 'sponge'
+        url = 'http://repo.spongepowered.org/maven'
     }
 }
 
-apply plugin: 'net.minecrell.quartz'
+apply plugin: 'net.minecrell.ice'
+//apply plugin: 'license'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
-mainClassName = 'net.minecrell.quartz.Quartz'
+mainClassName = 'net.minecrell.ice.launch.Ice'
 
 ext {
     mixinSrg = new File(project.buildDir, "tmp/mixins/mixins.srg")
@@ -45,8 +48,8 @@ ext {
 
 minecraft {
     version = '1.8'
-    mappings = 'snapshot_20150207'
-    tweaker = 'net.minecrell.quartz.QuartzTweaker'
+    mappings = 'snapshot_20150216'
+    tweaker = 'net.minecrell.ice.launch.IceTweaker'
 }
 
 dependencies {
@@ -64,15 +67,15 @@ shadowJar {
         include dependency('net.sf.jopt-simple:jopt-simple')
         include dependency('org.ow2.asm:asm-all')
     }
+
+    from project.mixinRefMap
 }
 build.dependsOn(shadowJar)
 
 jar {
-    from project.mixinRefMap
-
     manifest {
         attributes(
-                'Class-Path': 'minecraft_server.1.8.jar launchwrapper-1.11.jar'
+                'Class-Path': 'bin/minecraft_server.1.8.jar bin/launchwrapper-1.11.jar'
         )
     }
 }
@@ -90,9 +93,21 @@ compileJava {
     options.encoding = 'utf8'
 }
 
+// License header formatting
+/*license {
+    header file('LICENSE')
+    exclude '*.txt'
+    sourceSets = project.sourceSets
+    ignoreFailures false
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+}*/
+
 // Copy the current srgs to the build dir so the user doesn't have to go hunting for them
 task copySrgs(type: Copy, dependsOn: 'genSrgs') {
-    from plugins.getPlugin('net.minecrell.quartz').delayedFile('{SRG_DIR}')
+    from plugins.getPlugin('net.minecrell.ice').delayedFile('{SRG_DIR}')
 
     include '**/*.srg'
     into 'build/srgs'
