@@ -2,7 +2,7 @@ sudo: false
 language: java
 jdk:
   - oraclejdk8
-install: gradle setupCIWorkspace
-script: gradle build
+install: ./gradlew setupCIWorkspace
+script: ./gradlew build
 notifications:
   email: false
