@@ -43,7 +43,7 @@ apply plugin: 'com.github.johnrengelman.shadow'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-mainClassName = 'net.minecrell.ice.launch.Ice'
+mainClassName = 'net.minecrell.ice.launch.IceLaunch'
 
 ext {
     mixinSrg = new File(project.buildDir, "tmp/mixins/mixins.srg")
