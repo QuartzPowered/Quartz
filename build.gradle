@@ -29,6 +29,10 @@ repositories {
         name = 'sponge'
         url = 'http://repo.spongepowered.org/maven'
     }
+    maven {
+        name = 'sonatype-snapshots'
+        url = 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
 }
 
 apply plugin: 'net.minecrell.ice'
@@ -53,6 +57,7 @@ minecraft {
 }
 
 dependencies {
+    compile project('SpongeAPI')
     compile('org.spongepowered:mixin:0.1-SNAPSHOT') {
         exclude module: 'launchwrapper'
     }
@@ -67,6 +72,21 @@ shadowJar {
         include dependency('org.spongepowered:mixin')
         include dependency('net.sf.jopt-simple:jopt-simple')
         include dependency('org.ow2.asm:asm-all')
+
+        // SpongeAPI
+        include project('SpongeAPI')
+
+        include dependency('org.slf4j:slf4j-api')
+
+        include dependency('com.google.inject:guice')
+        include dependency('aopalliance:aopalliance:1.0')
+        include dependency('javax.inject:javax.inject')
+
+        include dependency('com.typesafe:config')
+        include dependency('ninja.leaping.configurate:configurate-core')
+        include dependency('ninja.leaping.configurate:configurate-hocon')
+
+        include dependency('com.flowpowered:flow-math')
     }
 
     from project.mixinRefMap
@@ -127,6 +147,18 @@ reobf {
 
 afterEvaluate {
     tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
+}
+
+// Disable checkstyle and Javadocs for SpongeAPI
+project('SpongeAPI') {
+    afterEvaluate {
+        configure([javadoc, javadocJar, sourceJar, licenseFormat]) {
+            enabled = false
+        }
+        tasks.withType(Checkstyle) {
+            enabled = false
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {
