@@ -26,10 +26,13 @@ package net.minecrell.ice.launch;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraft.launchwrapper.LogWrapper;
+import org.apache.logging.log4j.Level;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -50,8 +53,12 @@ public final class IceTweaker implements ITweaker {
         loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
         loader.addClassLoaderExclusion("org.spongepowered.tools.");
 
-        Launch.blackboard.put("ice.deobf-srg", Paths.get("bin", "deobf.srg.gz"));
-        loader.registerTransformer("net.minecrell.ice.launch.transformers.DeobfuscationTransformer");
+        // Check if we're running in deobfuscated environment already
+        if (isObfuscated()) {
+            Launch.blackboard.put("ice.deobf-srg", Paths.get("bin", "deobf.srg.gz"));
+            loader.registerTransformer("net.minecrell.ice.launch.transformers.DeobfuscationTransformer");
+        }
+
         Launch.blackboard.put("ice.at", "ice_at.cfg");
         loader.registerTransformer("net.minecrell.ice.launch.transformers.AccessTransformer");
 
@@ -60,6 +67,19 @@ public final class IceTweaker implements ITweaker {
         env.addConfiguration("mixins.ice.json");
         env.setSide(MixinEnvironment.Side.SERVER);
         loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
+    }
+
+    private static boolean isObfuscated() {
+        try {
+            byte[] bytes = Launch.classLoader.getClassBytes("net.minecraft.world.World");
+            if (bytes != null) {
+                LogWrapper.log(Level.INFO, "Loading in deobfuscated environment!");
+                return false;
+            }
+        } catch (IOException ignored) {
+        }
+
+        return true;
     }
 
     @Override
