@@ -53,8 +53,9 @@ minecraft {
 }
 
 dependencies {
-    compile 'org.spongepowered:mixin:0.1-SNAPSHOT'
-    runtime 'org.ow2.asm:asm-all:5.0.3'
+    compile('org.spongepowered:mixin:0.1-SNAPSHOT') {
+        exclude module: 'launchwrapper'
+    }
 }
 
 shadowJar {
@@ -126,4 +127,8 @@ reobf {
 
 afterEvaluate {
     tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
 }
