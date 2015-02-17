@@ -26,7 +26,7 @@ package net.minecrell.ice.launch;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
-import net.minecraft.launchwrapper.LogWrapper;
+import net.minecrell.ice.Ice;
 import org.apache.logging.log4j.Level;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
@@ -34,13 +34,14 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 public final class IceTweaker implements ITweaker {
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-
+        new Ice(gameDir != null ? gameDir.toPath() : Paths.get("")).launch(args != null ? args : Collections.emptyList());
     }
 
     @Override
@@ -73,7 +74,7 @@ public final class IceTweaker implements ITweaker {
         try {
             byte[] bytes = Launch.classLoader.getClassBytes("net.minecraft.world.World");
             if (bytes != null) {
-                LogWrapper.log(Level.INFO, "Loading in deobfuscated environment!");
+                Ice.getLogger().log(Level.INFO, "Loading in deobfuscated environment!");
                 return false;
             }
         } catch (IOException ignored) {
