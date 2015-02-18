@@ -25,13 +25,13 @@ package net.minecrell.ice;
 
 import com.google.common.base.Optional;
 import net.minecraft.server.MinecraftServer;
+import net.minecrell.ice.plugin.IcePluginManager;
 import org.apache.commons.lang3.NotImplementedException;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.GameRegistry;
 import org.spongepowered.api.MinecraftVersion;
 import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
-import org.spongepowered.api.plugin.PluginManager;
 import org.spongepowered.api.service.ServiceManager;
 import org.spongepowered.api.service.command.CommandService;
 import org.spongepowered.api.service.event.EventManager;
@@ -42,13 +42,13 @@ import javax.inject.Inject;
 
 public class IceGame implements Game {
 
-    private final PluginManager pluginManager;
+    private final IcePluginManager pluginManager;
     private final EventManager eventManager;
     private final GameRegistry gameRegistry;
     private final ServiceManager serviceManager;
 
     @Inject
-    public IceGame(PluginManager pluginManager, EventManager eventManager, GameRegistry gameRegistry, ServiceManager serviceManager) {
+    public IceGame(IcePluginManager pluginManager, EventManager eventManager, GameRegistry gameRegistry, ServiceManager serviceManager) {
         this.pluginManager = pluginManager;
         this.eventManager = eventManager;
         this.gameRegistry = gameRegistry;
@@ -66,7 +66,7 @@ public class IceGame implements Game {
     }
 
     @Override
-    public PluginManager getPluginManager() {
+    public IcePluginManager getPluginManager() {
         return pluginManager;
     }
 

@@ -26,7 +26,7 @@ package net.minecrell.ice.plugin;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
+import net.minecraft.launchwrapper.Launch;
 import net.minecrell.ice.Ice;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -39,8 +39,6 @@ import org.spongepowered.api.plugin.PluginManager;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,18 +85,24 @@ public class IcePluginManager implements PluginManager {
                             }
                         }
                     }
+                } catch (IOException e) {
+                    ice.getLogger().error("Failed to load plugin JAR: " + jar, e);
+                    continue;
                 }
 
                 // Load the plugin
                 if (pluginClassName != null) {
                     try {
-                        URLClassLoader classLoader = URLClassLoader.newInstance(new URL[]{jar.toUri().toURL()}, getClass().getClassLoader());
-                        Class<?> pluginClass = classLoader.loadClass(pluginClassName);
+                        Launch.classLoader.addURL(jar.toUri().toURL());
+                        Class<?> pluginClass = Class.forName(pluginClassName);
                         IcePluginContainer container = new IcePluginContainer(pluginClass);
                         plugins.put(container.getId(), container);
                         pluginInstances.put(container.getInstance(), container);
+                        ice.getGame().getEventManager().register(container, container.getInstance());
+
+                        ice.getLogger().info("Loaded plugin: {} (from {})", container.getName(), jar);
                     } catch (Throwable e) {
-                        throw Throwables.propagate(e);
+                        ice.getLogger().error("Failed to load plugin: " + pluginClassName + " (from " + jar + ')', e);
                     }
                 }
             }
@@ -124,6 +128,12 @@ public class IcePluginManager implements PluginManager {
 
     @Override
     public Optional<PluginContainer> fromInstance(Object instance) {
+        requireNonNull(instance, "instance");
+
+        if (instance instanceof PluginContainer) {
+            return Optional.of((PluginContainer) instance);
+        }
+
         return Optional.fromNullable(pluginInstances.get(instance));
     }
 

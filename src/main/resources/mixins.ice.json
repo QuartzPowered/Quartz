@@ -2,7 +2,6 @@
     "package": "net.minecrell.ice.launch.mixin",
     "refmap": "mixins.ice.refmap.json",
     "server": [
-        "MixinMinecraftServer",
         "MixinDedicatedServer"
     ]
 }

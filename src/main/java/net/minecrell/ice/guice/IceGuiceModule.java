@@ -39,9 +39,15 @@ import org.spongepowered.api.service.event.EventManager;
 
 public class IceGuiceModule extends AbstractModule {
 
+    private final Ice ice;
+
+    public IceGuiceModule(Ice ice) {
+        this.ice = ice;
+    }
+
     @Override
     protected void configure() {
-        bind(Ice.class).in(Scopes.SINGLETON);
+        bind(Ice.class).toInstance(ice);
         bind(Game.class).to(IceGame.class).in(Scopes.SINGLETON);
         bind(PluginManager.class).to(IcePluginManager.class).in(Scopes.SINGLETON);
         bind(EventManager.class).to(IceEventManager.class).in(Scopes.SINGLETON);

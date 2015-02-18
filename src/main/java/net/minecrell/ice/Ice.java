@@ -23,50 +23,56 @@
 
 package net.minecrell.ice;
 
-import static com.google.common.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
-
+import com.google.common.base.Throwables;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import net.minecrell.ice.event.IceEventFactory;
 import net.minecrell.ice.guice.IceGuiceModule;
-import net.minecrell.ice.plugin.IcePluginManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.event.state.ConstructionEvent;
+import org.spongepowered.api.event.state.InitializationEvent;
+import org.spongepowered.api.event.state.LoadCompleteEvent;
+import org.spongepowered.api.event.state.PostInitializationEvent;
+import org.spongepowered.api.event.state.PreInitializationEvent;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 public final class Ice {
 
-    private static final Logger logger = LogManager.getLogger();
+    private static final Ice instance = new Ice();
 
-    public static Logger getLogger() {
-        return logger;
+    public static Ice getInstance() {
+        return instance;
     }
 
-    private static final Injector injector = Guice.createInjector(new IceGuiceModule());
+    private static final Injector injector = Guice.createInjector(new IceGuiceModule(instance));
 
     public static Injector getInjector() {
         return injector;
     }
 
-    public static Ice getInstance() {
-        return injector.getInstance(Ice.class);
-    }
+    private final Logger logger = LogManager.getLogger();
 
-    private Game game;
-    private Path gameDir;
-    private Path pluginsDir;
+    private final Path gameDir;
+    private final Path pluginsDir;
 
-    public void initialize(Path gameDir, List<String> args) {
-        this.gameDir = requireNonNull(gameDir, "gameDir");
+    private IceGame game;
+
+    private Ice() {
+        this.gameDir = IceLaunch.getGameDirectory();
         this.pluginsDir = gameDir.resolve("plugins");
     }
 
     public Game getGame() {
         return game;
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public Path getGameDirectory() {
@@ -77,19 +83,32 @@ public final class Ice {
         return pluginsDir;
     }
 
-    public void launch() throws Exception {
-        getLogger().info("Launching Ice...");
+    public void load() {
+        try {
+            logger.info("Loading Ice...");
 
-        this.game = injector.getInstance(Game.class);
+            this.game = injector.getInstance(IceGame.class);
 
-        if (Files.notExists(gameDir) || Files.notExists(pluginsDir)) {
-            Files.createDirectories(pluginsDir);
+            if (Files.notExists(gameDir) || Files.notExists(pluginsDir)) {
+                Files.createDirectories(pluginsDir);
+            }
+
+            getLogger().info("Loading plugins...");
+            game.getPluginManager().loadPlugins();
+            game.getEventManager().post(IceEventFactory.createStateEvent(ConstructionEvent.class, game));
+            getLogger().info("Done! Initializing plugins...");
+            game.getEventManager().post(IceEventFactory.createStateEvent(PreInitializationEvent.class, game));
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
         }
+    }
 
-        ((IcePluginManager) game.getPluginManager()).loadPlugins();
+    public void initialize() {
+        game.getEventManager().post(IceEventFactory.createStateEvent(InitializationEvent.class, game));
+        game.getEventManager().post(IceEventFactory.createStateEvent(PostInitializationEvent.class, game));
+        getLogger().info("Successfully loaded and initialized plugins.");
 
-        // TODO
-        getLogger().info("Done! Starting Minecraft server...");
+        game.getEventManager().post(IceEventFactory.createStateEvent(LoadCompleteEvent.class, game));
     }
 
 }

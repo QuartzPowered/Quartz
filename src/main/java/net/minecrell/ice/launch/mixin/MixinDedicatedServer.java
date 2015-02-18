@@ -25,7 +25,10 @@ package net.minecrell.ice.launch.mixin;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.apache.logging.log4j.LogManager;
+import net.minecrell.ice.Ice;
+import net.minecrell.ice.event.IceEventFactory;
+import org.spongepowered.api.Game;
+import org.spongepowered.api.event.state.ServerAboutToStartEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -41,9 +44,23 @@ public abstract class MixinDedicatedServer extends MinecraftServer {
         super(workDir, proxy, profileCacheDir);
     }
 
-    @Inject(method = "startServer", at = @At("RETURN"))
-    public void onStartServer(CallbackInfoReturnable<Boolean> ci) {
-        LogManager.getLogger().info("YOO ICE");
+    @Inject(method = "startServer", at = @At(value = "INVOKE_STRING", target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V",
+            args = {"ldc=Loading properties"}, shift = At.Shift.BY, by = -2))
+    public void onServerLoad(CallbackInfoReturnable<Boolean> ci) {
+        Ice.getInstance().load();
+    }
+
+    @Inject(method = "startServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/DedicatedServer;setConfigManager"
+            + "(Lnet/minecraft/server/management/ServerConfigurationManager;)V", shift = At.Shift.BY, by = -7))
+    public void onServerInitialize(CallbackInfoReturnable<Boolean> ci) {
+        Ice.getInstance().initialize();
+    }
+
+    @Inject(method = "startServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/DedicatedServer;loadAllWorlds"
+            + "(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/WorldType;Ljava/lang/String;)V", shift = At.Shift.BY, by = -24))
+    public void onServerAboutToStart(CallbackInfoReturnable<Boolean> ci) {
+        Game game = Ice.getInstance().getGame();
+        game.getEventManager().post(IceEventFactory.createStateEvent(ServerAboutToStartEvent.class, game));
     }
 
 }
