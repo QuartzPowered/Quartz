@@ -8,7 +8,9 @@ import java.nio.file.Path;
 import javax.annotation.Nullable;
 
 public final class IceLaunch {
-    private IceLaunch() {}
+
+    private IceLaunch() {
+    }
 
     @Nullable private static Path gameDir;
 

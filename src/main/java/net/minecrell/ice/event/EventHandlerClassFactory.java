@@ -87,7 +87,8 @@ class EventHandlerClassFactory implements EventHandlerFactory {
     @SuppressWarnings("unchecked")
     private Class<? extends EventHandler> createClass(Class<?> handle, Method method) {
         Class<?> eventClass = method.getParameterTypes()[0];
-        String name = targetPackage + eventClass.getSimpleName() + "Handler_" + handle.getSimpleName() + '_' + method.getName() + id.incrementAndGet();
+        String name =
+                targetPackage + eventClass.getSimpleName() + "Handler_" + handle.getSimpleName() + '_' + method.getName() + id.incrementAndGet();
         return (Class<? extends EventHandler>) classLoader.defineClass(name, generateClass(name, handle, method, eventClass));
     }
 
@@ -105,7 +106,7 @@ class EventHandlerClassFactory implements EventHandlerFactory {
         FieldVisitor fv;
         MethodVisitor mv;
 
-        cw.visit(V1_8, ACC_PUBLIC + ACC_FINAL + ACC_SUPER, name, null, "java/lang/Object", new String[] { EVENT_HANDLER_CLASS });
+        cw.visit(V1_8, ACC_PUBLIC + ACC_FINAL + ACC_SUPER, name, null, "java/lang/Object", new String[]{EVENT_HANDLER_CLASS});
 
         {
             fv = cw.visitField(ACC_PRIVATE + ACC_FINAL, "handle", handleDescriptor, null, null);
@@ -150,6 +151,7 @@ class EventHandlerClassFactory implements EventHandlerFactory {
     }
 
     private static class Handler {
+
         private final Class<?> type;
         private final Method method;
 

@@ -21,5 +21,4 @@
  * THE SOFTWARE.
  */
 
-@org.spongepowered.api.util.annotation.NonnullByDefault
-package net.minecrell.ice.launch.mixin;
+@org.spongepowered.api.util.annotation.NonnullByDefault package net.minecrell.ice.launch.mixin;

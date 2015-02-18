@@ -48,11 +48,11 @@ public class IceEventFactory {
 
         factories = CacheBuilder.newBuilder()
                 .build(new CacheLoader<Class<?>, EventFactory<?>>() {
-                            @Override
-                            public EventFactory<?> load(Class<?> type) {
-                                return factoryProvider.create(type, AbstractEvent.class);
-                            }
-                        });
+                    @Override
+                    public EventFactory<?> load(Class<?> type) {
+                        return factoryProvider.create(type, AbstractEvent.class);
+                    }
+                });
     }
 
     @SuppressWarnings({"unchecked", "ConstantConditions"})

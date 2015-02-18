@@ -140,7 +140,9 @@ public class AccessTransformer implements IClassTransformer {
                 for (FieldNode fieldNode : classNode.fields) {
                     if (m.wildcard || fieldNode.name.equals(m.name)) {
                         fieldNode.access = m.transform(fieldNode.access);
-                        if (!m.wildcard) break;
+                        if (!m.wildcard) {
+                            break;
+                        }
                     }
                 }
             } else {
@@ -162,13 +164,15 @@ public class AccessTransformer implements IClassTransformer {
                             overridable.add(methodNode);
                         }
 
-                        if (!m.wildcard) break;
+                        if (!m.wildcard) {
+                            break;
+                        }
                     }
                 }
 
                 if (overridable != null) {
                     for (MethodNode methodNode : classNode.methods) {
-                        for (Iterator<AbstractInsnNode> itr = methodNode.instructions.iterator(); itr.hasNext();) {
+                        for (Iterator<AbstractInsnNode> itr = methodNode.instructions.iterator(); itr.hasNext(); ) {
                             AbstractInsnNode insn = itr.next();
                             if (insn.getOpcode() == INVOKESPECIAL) {
                                 MethodInsnNode mInsn = (MethodInsnNode) insn;
@@ -191,6 +195,7 @@ public class AccessTransformer implements IClassTransformer {
     }
 
     private static class Modifier {
+
         private final String name;
         private final String desc;
         private final boolean wildcard;
@@ -222,8 +227,9 @@ public class AccessTransformer implements IClassTransformer {
                     result |= targetAccess;
                     break;
                 case 0: // default
-                    if (targetAccess != ACC_PRIVATE)
+                    if (targetAccess != ACC_PRIVATE) {
                         result |= targetAccess;
+                    }
                     break;
                 case ACC_PROTECTED:
                     result |= targetAccess != 0 && targetAccess != ACC_PRIVATE ? targetAccess : ACC_PROTECTED;

@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import javax.annotation.Nullable;
 
 class RegisteredHandler implements EventHandler, Comparable<RegisteredHandler> {
+
     private final PluginContainer plugin;
 
     private final Class<? extends Event> eventClass;

@@ -84,8 +84,9 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
                 gzip ? new GZIPInputStream(Files.newInputStream(path)) : Files.newInputStream(path), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if ((line = line.trim()).isEmpty())
+                if ((line = line.trim()).isEmpty()) {
                     continue;
+                }
 
                 String[] parts = StringUtils.split(line, ' ');
                 if (parts.length < 3) {
@@ -109,7 +110,9 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
                         dest = getSignature(parts[2]);
                         String fieldType = getFieldType(source[0], source[1]);
                         fields.put(source[0], source[1] + ':' + fieldType, dest[1]);
-                        if (fieldType != null) fields.put(source[0], source[1] + ":null", dest[1]);
+                        if (fieldType != null) {
+                            fields.put(source[0], source[1] + ":null", dest[1]);
+                        }
                         break;
                     case METHOD:
                         source = getSignature(parts[1]);
@@ -130,7 +133,7 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     private static String[] getSignature(String in) {
         int pos = in.lastIndexOf('/');
-        return new String[] { in.substring(0, pos), in.substring(pos + 1) };
+        return new String[]{in.substring(0, pos), in.substring(pos + 1)};
     }
 
     private static byte[] getBytes(String name) {
@@ -143,10 +146,14 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     private String getFieldType(String owner, String name) {
         Map<String, String> fieldDescriptions = this.fieldDescriptions.get(owner);
-        if (fieldDescriptions != null) return fieldDescriptions.get(name);
+        if (fieldDescriptions != null) {
+            return fieldDescriptions.get(name);
+        }
 
         byte[] bytes = getBytes(owner);
-        if (bytes == null) return null;
+        if (bytes == null) {
+            return null;
+        }
 
         ClassReader reader = new ClassReader(bytes);
         ClassNode classNode = new ClassNode();
@@ -167,24 +174,32 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     @Override
     public String map(String typeName) {
-        if (classes == null) return typeName;
+        if (classes == null) {
+            return typeName;
+        }
         String name = classes.get(typeName);
         return name != null ? name : typeName;
     }
 
     public String unmap(String typeName) {
-        if (classes == null) return typeName;
+        if (classes == null) {
+            return typeName;
+        }
         String name = classes.inverse().get(typeName);
         return name != null ? name : typeName;
     }
 
     @Override
     public String mapFieldName(String owner, String fieldName, String desc) {
-        if (classes == null) return fieldName;
+        if (classes == null) {
+            return fieldName;
+        }
         Map<String, String> fields = getFieldMap(owner);
         if (fields != null) {
             String name = fields.get(fieldName + ':' + desc);
-            if (name != null) return name;
+            if (name != null) {
+                return name;
+            }
         }
 
         return fieldName;
@@ -192,7 +207,9 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     private Map<String, String> getFieldMap(String owner) {
         Map<String, String> result = fields.get(owner);
-        if (result != null) return result;
+        if (result != null) {
+            return result;
+        }
 
         if (!failedFields.contains(owner)) {
             loadSuperMaps(owner);
@@ -206,11 +223,15 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     @Override
     public String mapMethodName(String owner, String methodName, String desc) {
-        if (classes == null) return methodName;
+        if (classes == null) {
+            return methodName;
+        }
         Map<String, String> methods = getMethodMap(owner);
         if (methods != null) {
             String name = methods.get(methodName + desc);
-            if (name != null) return name;
+            if (name != null) {
+                return name;
+            }
         }
 
         return methodName;
@@ -218,7 +239,9 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     private Map<String, String> getMethodMap(String owner) {
         Map<String, String> result = methods.get(owner);
-        if (result != null) return result;
+        if (result != null) {
+            return result;
+        }
 
         if (!failedMethods.contains(owner)) {
             loadSuperMaps(owner);
@@ -232,7 +255,9 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
-        if (bytes == null) return null;
+        if (bytes == null) {
+            return null;
+        }
 
         //System.out.println("\t> Deobfuscating " + name + " -> " + transformedName);
         ClassWriter writer = new ClassWriter(0);
@@ -261,15 +286,18 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
     }
 
     void createSuperMaps(String name, String superName, String[] interfaces) {
-        if (Strings.isNullOrEmpty(superName)) return;
+        if (Strings.isNullOrEmpty(superName)) {
+            return;
+        }
 
         String[] parents = new String[interfaces.length + 1];
         parents[0] = superName;
         System.arraycopy(interfaces, 0, parents, 1, interfaces.length);
 
         for (String parent : parents) {
-            if (!fields.containsKey(parent))
+            if (!fields.containsKey(parent)) {
                 loadSuperMaps(parent);
+            }
         }
 
         Map<String, String> fields = new HashMap<>();
@@ -278,9 +306,13 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
         Map<String, String> m;
         for (String parent : parents) {
             m = this.fields.get(parent);
-            if (m != null) fields.putAll(m);
+            if (m != null) {
+                fields.putAll(m);
+            }
             m = this.methods.get(parent);
-            if (m != null) methods.putAll(m);
+            if (m != null) {
+                methods.putAll(m);
+            }
         }
 
         fields.putAll(rawFields.row(name));
@@ -292,7 +324,9 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
 
     String getStaticFieldType(String oldType, String oldName, String newType, String newName) {
         String type = getFieldType(oldType, oldName);
-        if (oldType.equals(newType)) return type;
+        if (oldType.equals(newType)) {
+            return type;
+        }
 
         Map<String, String> newClassMap = fieldDescriptions.get(newType);
         if (newClassMap == null) {
@@ -302,7 +336,6 @@ public class DeobfuscationTransformer extends Remapper implements IClassTransfor
         newClassMap.put(newName, type);
         return type;
     }
-
 
 
     private enum MappingType {
