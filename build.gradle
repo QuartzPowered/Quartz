@@ -65,6 +65,31 @@ dependencies {
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.0-beta9'
 }
 
+compileJava {
+    options.compilerArgs += [
+            '-Xlint:all',
+            '-Xlint:-path',
+            '-Xlint:-processing',
+            "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
+            "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}"
+    ]
+
+    options.deprecation = true
+    options.encoding = 'utf8'
+}
+
+afterEvaluate {
+    tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
+}
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': 'bin/minecraft_server.1.8.jar bin/launchwrapper-1.11.jar'
+        )
+    }
+}
+
 shadowJar {
     classifier = ''
     exclude 'GradleStart**'
@@ -95,27 +120,6 @@ shadowJar {
     from project.mixinRefMap
 }
 build.dependsOn(shadowJar)
-
-jar {
-    manifest {
-        attributes(
-                'Class-Path': 'bin/minecraft_server.1.8.jar bin/launchwrapper-1.11.jar'
-        )
-    }
-}
-
-compileJava {
-    options.compilerArgs += [
-            '-Xlint:all',
-            '-Xlint:-path',
-            '-Xlint:-processing',
-            "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
-            "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}"
-    ]
-
-    options.deprecation = true
-    options.encoding = 'utf8'
-}
 
 // License header formatting
 /*license {
@@ -148,8 +152,8 @@ reobf {
     }
 }
 
-afterEvaluate {
-    tasks.compileJava.options.compilerArgs += "-AreobfSrgFile=${tasks.reobf.srg}"
+configure([distZip, distTar]) {
+    enabled = false
 }
 
 // Disable checkstyle and Javadocs for SpongeAPI
