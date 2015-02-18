@@ -26,19 +26,19 @@ package net.minecrell.ice;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import net.minecrell.ice.guice.IceGuiceModule;
+import net.minecrell.ice.plugin.IcePluginManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.Game;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 public final class Ice {
-
-    private static Ice instance;
-
-    public static Ice getInstance() {
-        return instance;
-    }
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -46,17 +46,48 @@ public final class Ice {
         return logger;
     }
 
-    private final Path gameDir;
+    private static final Injector injector = Guice.createInjector(new IceGuiceModule());
 
-    public Ice(Path gameDir) {
-        checkState(instance == null, "Ice already initialized");
-        instance = this;
-        this.gameDir = requireNonNull(gameDir, "gameDir");
+    public static Injector getInjector() {
+        return injector;
     }
 
+    public static Ice getInstance() {
+        return injector.getInstance(Ice.class);
+    }
 
-    public void launch(List<String> args) {
+    private Game game;
+    private Path gameDir;
+    private Path pluginsDir;
+
+    public void initialize(Path gameDir, List<String> args) {
+        this.gameDir = requireNonNull(gameDir, "gameDir");
+        this.pluginsDir = gameDir.resolve("plugins");
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public Path getGameDirectory() {
+        return gameDir;
+    }
+
+    public Path getPluginsDirectory() {
+        return pluginsDir;
+    }
+
+    public void launch() throws Exception {
         getLogger().info("Launching Ice...");
+
+        this.game = injector.getInstance(Game.class);
+
+        if (Files.notExists(gameDir) || Files.notExists(pluginsDir)) {
+            Files.createDirectories(pluginsDir);
+        }
+
+        ((IcePluginManager) game.getPluginManager()).loadPlugins();
+
         // TODO
         getLogger().info("Done! Starting Minecraft server...");
     }

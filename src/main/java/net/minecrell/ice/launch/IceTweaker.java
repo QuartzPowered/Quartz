@@ -23,6 +23,7 @@
 
 package net.minecrell.ice.launch;
 
+import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
@@ -39,13 +40,17 @@ import java.util.List;
 
 public final class IceTweaker implements ITweaker {
 
+    private final Ice ice = Ice.getInjector().getInstance(Ice.class);
+
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        new Ice(gameDir != null ? gameDir.toPath() : Paths.get("")).launch(args != null ? args : Collections.emptyList());
+        ice.initialize(gameDir != null ? gameDir.toPath() : Paths.get(""), args != null ? args : Collections.emptyList());
     }
 
     @Override
     public void injectIntoClassLoader(LaunchClassLoader loader) {
+        Ice.getLogger().info("Initializing Ice...");
+
         loader.addClassLoaderExclusion("org.apache.");
         loader.addClassLoaderExclusion("io.netty.");
         loader.addClassLoaderExclusion("gnu.");
@@ -68,13 +73,19 @@ public final class IceTweaker implements ITweaker {
         env.addConfiguration("mixins.ice.json");
         env.setSide(MixinEnvironment.Side.SERVER);
         loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
+
+        try {
+            ice.launch();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     private static boolean isObfuscated() {
         try {
             byte[] bytes = Launch.classLoader.getClassBytes("net.minecraft.world.World");
             if (bytes != null) {
-                Ice.getLogger().log(Level.INFO, "Loading in deobfuscated environment!");
+                Ice.getLogger().log(Level.INFO, "We're in a deobfuscated environment!");
                 return false;
             }
         } catch (IOException ignored) {
