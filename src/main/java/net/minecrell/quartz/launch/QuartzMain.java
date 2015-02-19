@@ -2,6 +2,10 @@
  * Quartz
  * Copyright (c) 2015, Minecrell <https://github.com/Minecrell>
  *
+ * Based on Sponge and SpongeAPI, licensed under the MIT License (MIT).
+ * Copyright (c) SpongePowered.org <http://www.spongepowered.org>
+ * Copyright (c) contributors
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
