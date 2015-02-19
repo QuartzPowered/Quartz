@@ -17,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'net.minecrell:IceGradle:0.1-SNAPSHOT'
+        classpath 'net.minecrell:QuartzGradle:0.1-SNAPSHOT'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
         //classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
     }
@@ -35,7 +35,7 @@ repositories {
     }
 }
 
-apply plugin: 'net.minecrell.ice'
+apply plugin: 'net.minecrell.quartz'
 //apply plugin: 'license'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -43,17 +43,17 @@ apply plugin: 'com.github.johnrengelman.shadow'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-mainClassName = 'net.minecrell.ice.launch.IceMain'
+mainClassName = 'net.minecrell.quartz.launch.QuartzMain'
 
 ext {
     mixinSrg = new File(project.buildDir, "tmp/mixins/mixins.srg")
-    mixinRefMap = new File(project.buildDir, "tmp/mixins/mixins.ice.refmap.json")
+    mixinRefMap = new File(project.buildDir, "tmp/mixins/mixins.quartz.refmap.json")
 }
 
 minecraft {
     version = '1.8'
-    mappings = 'snapshot_20150218'
-    tweaker = 'net.minecrell.ice.launch.IceTweaker'
+    mappings = 'snapshot_20150219'
+    tweaker = 'net.minecrell.quartz.launch.QuartzTweaker'
 }
 
 dependencies {
@@ -135,7 +135,7 @@ build.dependsOn(shadowJar)
 
 // Copy the current srgs to the build dir so the user doesn't have to go hunting for them
 task copySrgs(type: Copy, dependsOn: 'genSrgs') {
-    from plugins.getPlugin('net.minecrell.ice').delayedFile('{SRG_DIR}')
+    from plugins.getPlugin('net.minecrell.quartz').delayedFile('{SRG_DIR}')
 
     include '**/*.srg'
     into 'build/srgs'

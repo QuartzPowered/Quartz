@@ -1,0 +1,3 @@
+The ASM transformers of Quartz are based on parts of the Forge Mod Loader
+<https://github.com/MinecraftForge/FML> by the MinecraftForge team.
+The original by cpw sources can be found at <http://git.io/NHex>.
