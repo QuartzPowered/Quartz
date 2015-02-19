@@ -44,6 +44,8 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.net.InetSocketAddress;
 
+import javax.annotation.Nullable;
+
 @Mixin(PingResponseHandler.class)
 public abstract class MixinPingResponseHandler extends ChannelInboundHandlerAdapter {
 
@@ -53,7 +55,7 @@ public abstract class MixinPingResponseHandler extends ChannelInboundHandlerAdap
     @Shadow
     private NetworkSystem networkSystem;
 
-    private ByteBuf buf;
+    @Nullable private ByteBuf buf;
 
     @Shadow
     abstract void writeAndFlush(ChannelHandlerContext ctx, ByteBuf data);

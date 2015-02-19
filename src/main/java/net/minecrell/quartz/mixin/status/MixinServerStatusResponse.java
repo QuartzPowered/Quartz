@@ -53,16 +53,16 @@ public abstract class MixinServerStatusResponse implements StatusPingEvent.Respo
     private IChatComponent serverMotd;
     private Message description;
 
-    @Shadow
+    @Shadow @Nullable
     private ServerStatusResponse.PlayerCountData playerCount;
-    private ServerStatusResponse.PlayerCountData playerBackup;
+    @Nullable private ServerStatusResponse.PlayerCountData playerBackup;
 
     @Shadow
     private ServerStatusResponse.MinecraftProtocolVersionIdentifier protocolVersion;
 
-    @Shadow
+    @Shadow @Nullable
     private String favicon;
-    private Favicon faviconHandle;
+    @Nullable private Favicon faviconHandle;
 
     @Override
     public Message getDescription() {
@@ -120,7 +120,7 @@ public abstract class MixinServerStatusResponse implements StatusPingEvent.Respo
     }
 
     @Overwrite
-    public void setFavicon(String faviconBlob) {
+    public void setFavicon(@Nullable String faviconBlob) {
         if (faviconBlob == null) {
             this.favicon = null;
             this.faviconHandle = null;

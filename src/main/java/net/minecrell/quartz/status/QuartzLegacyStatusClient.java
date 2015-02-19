@@ -33,19 +33,17 @@ import org.spongepowered.api.status.StatusClient;
 
 import java.net.InetSocketAddress;
 
+import javax.annotation.Nullable;
+
 public class QuartzLegacyStatusClient implements StatusClient {
 
     private final InetSocketAddress address;
     private final MinecraftVersion version;
     private final Optional<InetSocketAddress> virtualHost;
 
-    public QuartzLegacyStatusClient(InetSocketAddress address, MinecraftVersion version, InetSocketAddress virtualHost) {
+    public QuartzLegacyStatusClient(InetSocketAddress address, MinecraftVersion version, @Nullable InetSocketAddress virtualHost) {
         this.address = address;
-        if (version != null) {
-            this.version = version;
-        } else {
-            this.version = version;
-        }
+        this.version = version;
         this.virtualHost = Optional.fromNullable(virtualHost);
     }
 

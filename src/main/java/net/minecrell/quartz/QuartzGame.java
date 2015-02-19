@@ -27,6 +27,7 @@
 
 package net.minecrell.quartz;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import net.minecraft.server.MinecraftServer;
 import net.minecrell.quartz.event.QuartzEventManager;
@@ -48,8 +49,9 @@ import javax.inject.Singleton;
 @Singleton
 public class QuartzGame implements Game {
 
-    private static final String API_VERSION = QuartzGame.class.getPackage().getSpecificationVersion();
-    private static final String IMPLEMENTATION_VERSION = QuartzGame.class.getPackage().getImplementationVersion();
+    private static final String API_VERSION = MoreObjects.firstNonNull(QuartzGame.class.getPackage().getSpecificationVersion(), "UNKNOWN");
+    private static final String IMPLEMENTATION_VERSION =
+            MoreObjects.firstNonNull(QuartzGame.class.getPackage().getImplementationVersion(), "UNKNOWN");
 
     private static final MinecraftVersion MINECRAFT_VERSION = new QuartzMinecraftVersion("1.8", 47);
 

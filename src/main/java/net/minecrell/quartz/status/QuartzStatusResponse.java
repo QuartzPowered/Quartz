@@ -40,17 +40,21 @@ import org.spongepowered.api.status.StatusResponse;
 import java.net.InetSocketAddress;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 public final class QuartzStatusResponse {
 
     private QuartzStatusResponse() {
     }
 
+    @Nullable
     public static ServerStatusResponse post(MinecraftServer server, StatusClient client) {
         return call(create(server), client);
     }
 
+    @Nullable
     public static ServerStatusResponse postLegacy(MinecraftServer server, InetSocketAddress address, MinecraftVersion version,
-            InetSocketAddress virtualHost) {
+            @Nullable InetSocketAddress virtualHost) {
         ServerStatusResponse response = create(server);
         response.setProtocolVersionInfo(
                 new ServerStatusResponse.MinecraftProtocolVersionIdentifier(response.getProtocolVersionInfo().getName(), Byte.MAX_VALUE));
@@ -61,6 +65,7 @@ public final class QuartzStatusResponse {
         return response;
     }
 
+    @Nullable
     private static ServerStatusResponse call(ServerStatusResponse response, StatusClient client) {
         Game game = Quartz.instance.getGame();
         if (!game.getEventManager().post(SpongeEventFactory.createStatusPing(game, client, (StatusPingEvent.Response) response))) {

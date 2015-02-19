@@ -38,10 +38,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 @Mixin(ServerStatusResponse.PlayerCountData.class)
 public abstract class MixinPlayerCountData implements StatusPingEvent.Response.Players {
 
-    private List<GameProfile> profiles;
+    @Nullable private List<GameProfile> profiles;
 
     @Shadow
     private int onlinePlayerCount;
@@ -72,6 +74,10 @@ public abstract class MixinPlayerCountData implements StatusPingEvent.Response.P
     @Override
     @SuppressWarnings("unchecked")
     public List<org.spongepowered.api.GameProfile> getProfiles() {
+        if (profiles == null) {
+            this.profiles = Lists.newArrayList();
+        }
+
         return (List) this.profiles; // This cast should be always save
     }
 
