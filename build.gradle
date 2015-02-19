@@ -43,6 +43,8 @@ apply plugin: 'com.github.johnrengelman.shadow'
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
+version = '0.1-SNAPSHOT'
+
 mainClassName = 'net.minecrell.quartz.launch.QuartzMain'
 
 ext {
