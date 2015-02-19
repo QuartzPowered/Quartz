@@ -53,9 +53,8 @@ public final class QuartzTweaker implements ITweaker {
     public void injectIntoClassLoader(LaunchClassLoader loader) {
         logger.info("Initializing Quartz...");
 
-        loader.addClassLoaderExclusion("org.apache.");
         loader.addClassLoaderExclusion("io.netty.");
-        loader.addClassLoaderExclusion("gnu.");
+        loader.addClassLoaderExclusion("gnu.trove.");
         loader.addClassLoaderExclusion("joptsimple.");
         loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
         loader.addClassLoaderExclusion("org.spongepowered.tools.");
