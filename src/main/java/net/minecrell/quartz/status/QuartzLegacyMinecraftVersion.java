@@ -21,55 +21,47 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.guice;
+package net.minecrell.quartz.status;
 
-import com.google.common.base.MoreObjects;
-import org.spongepowered.api.service.config.ConfigDir;
+import org.spongepowered.api.MinecraftVersion;
 
-import java.lang.annotation.Annotation;
+public class QuartzLegacyMinecraftVersion implements MinecraftVersion {
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
+    public static final QuartzLegacyMinecraftVersion V1_3 = new QuartzLegacyMinecraftVersion("<=1.3", 39);
+    public static final QuartzLegacyMinecraftVersion V1_5 = new QuartzLegacyMinecraftVersion("1.4-1.5", 61);
+    public static final QuartzLegacyMinecraftVersion V1_6 = new QuartzLegacyMinecraftVersion("1.6", 78);
 
-    private final boolean shared;
+    private final String name;
+    private final int latestVersion;
 
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
+    private QuartzLegacyMinecraftVersion(String name, int latestVersion) {
+        this.name = name;
+        this.latestVersion = latestVersion;
+    }
+
+    public QuartzLegacyMinecraftVersion(QuartzLegacyMinecraftVersion base, int version) {
+        this.name = base.name;
+        this.latestVersion = version;
     }
 
     @Override
-    public boolean sharedRoot() {
-        return shared;
+    public String getName() {
+        return this.name;
     }
 
     @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
+    public boolean isLegacy() {
+        return true;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public int compareTo(MinecraftVersion o) {
+        if (o == this) {
+            return 0;
+        } else if (!o.isLegacy()) {
+            return -1;
+        } else {
+            return this.latestVersion - ((QuartzLegacyMinecraftVersion) o).latestVersion;
         }
-        if (!(o instanceof ConfigDir)) {
-            return false;
-        }
-
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
     }
-
-    @Override
-    public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
-                .toString();
-    }
-
 }

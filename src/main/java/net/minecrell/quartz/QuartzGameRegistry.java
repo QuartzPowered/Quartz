@@ -67,6 +67,9 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.UUID;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class QuartzGameRegistry implements GameRegistry {
 
     @Override
@@ -301,7 +304,7 @@ public class QuartzGameRegistry implements GameRegistry {
 
     @Override
     public GameProfile createGameProfile(UUID uuid, String name) {
-        throw new NotImplementedException("TODO");
+        return (GameProfile) new com.mojang.authlib.GameProfile(uuid, name);
     }
 
     @Override

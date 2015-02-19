@@ -46,24 +46,29 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class QuartzPluginManager implements PluginManager {
 
     private static final String PLUGIN_DESCRIPTOR = Type.getDescriptor(Plugin.class);
 
     private final Quartz quartz;
-    private final Map<String, QuartzPluginContainer> plugins = new HashMap<>();
-    private final Map<Object, QuartzPluginContainer> pluginInstances = new HashMap<>();
+    private final Map<String, PluginContainer> plugins = new HashMap<>();
+    private final Map<Object, PluginContainer> pluginInstances = new IdentityHashMap<>();
 
     @Inject
     public QuartzPluginManager(Quartz quartz) {
         this.quartz = requireNonNull(quartz, "quartz");
+        plugins.put(quartz.getId(), quartz);
+        pluginInstances.put(quartz, quartz);
     }
 
     public void loadPlugins() throws IOException {
@@ -130,7 +135,7 @@ public class QuartzPluginManager implements PluginManager {
     public Optional<PluginContainer> fromInstance(Object instance) {
         requireNonNull(instance, "instance");
 
-        if (instance instanceof PluginContainer) {
+        if (instance instanceof QuartzPluginContainer) {
             return Optional.of((PluginContainer) instance);
         }
 

@@ -21,55 +21,43 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.guice;
+package net.minecrell.quartz.status;
 
-import com.google.common.base.MoreObjects;
-import org.spongepowered.api.service.config.ConfigDir;
+import com.google.common.base.Optional;
+import org.spongepowered.api.MinecraftVersion;
+import org.spongepowered.api.status.StatusClient;
 
-import java.lang.annotation.Annotation;
+import java.net.InetSocketAddress;
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
+public class QuartzLegacyStatusClient implements StatusClient {
 
-    private final boolean shared;
+    private final InetSocketAddress address;
+    private final MinecraftVersion version;
+    private final Optional<InetSocketAddress> virtualHost;
 
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
-    }
-
-    @Override
-    public boolean sharedRoot() {
-        return shared;
-    }
-
-    @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public QuartzLegacyStatusClient(InetSocketAddress address, MinecraftVersion version, InetSocketAddress virtualHost) {
+        this.address = address;
+        if (version != null) {
+            this.version = version;
+        } else {
+            this.version = version;
         }
-        if (!(o instanceof ConfigDir)) {
-            return false;
-        }
-
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
+        this.virtualHost = Optional.fromNullable(virtualHost);
     }
 
     @Override
-    public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
+    public InetSocketAddress getAddress() {
+        return this.address;
     }
 
     @Override
-    public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
-                .toString();
+    public MinecraftVersion getVersion() {
+        return this.version;
+    }
+
+    @Override
+    public Optional<InetSocketAddress> getVirtualHost() {
+        return this.virtualHost;
     }
 
 }

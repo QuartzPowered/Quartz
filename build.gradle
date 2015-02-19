@@ -85,6 +85,12 @@ afterEvaluate {
 jar {
     manifest {
         attributes(
+                'Specification-Name': 'SpongeAPI',
+                'Specification-Version': 'TODO',
+                'Specification-Vendor': 'SpongePowered',
+                'Implementation-Name': name,
+                'Implementation-Version': version,
+                'Implementation-Vendor': 'Minecrell',
                 'Class-Path': 'bin/minecraft_server.1.8.jar bin/launchwrapper-1.11.jar'
         )
     }

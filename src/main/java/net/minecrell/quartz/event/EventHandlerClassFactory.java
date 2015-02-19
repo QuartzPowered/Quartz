@@ -71,10 +71,11 @@ class EventHandlerClassFactory implements EventHandlerFactory {
             });
 
     public EventHandlerClassFactory(String targetPackage) {
-        this.targetPackage = requireNonNull(targetPackage, "targetPackage");
+        requireNonNull(targetPackage, "targetPackage");
         if (!targetPackage.isEmpty()) {
             targetPackage += '.';
         }
+        this.targetPackage = targetPackage;
     }
 
     @Override

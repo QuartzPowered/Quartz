@@ -37,18 +37,18 @@ import org.spongepowered.api.event.state.InitializationEvent;
 import org.spongepowered.api.event.state.LoadCompleteEvent;
 import org.spongepowered.api.event.state.PostInitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
+import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.service.ProviderExistsException;
+import org.spongepowered.api.service.command.CommandService;
+import org.spongepowered.api.service.command.SimpleCommandService;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public final class Quartz {
+public final class Quartz implements PluginContainer {
 
-    private static final Quartz instance = new Quartz();
-
-    public static Quartz getInstance() {
-        return instance;
-    }
+    public static final Quartz instance = new Quartz();
 
     private static final Injector injector = Guice.createInjector(new QuartzGuiceModule());
 
@@ -96,6 +96,14 @@ public final class Quartz {
 
             this.game = injector.getInstance(QuartzGame.class);
 
+            try {
+                SimpleCommandService commandService = new SimpleCommandService(game.getPluginManager());
+                game.getServiceManager().setProvider(this, CommandService.class, commandService);
+                game.getEventManager().register(this, commandService);
+            } catch (ProviderExistsException e) {
+                logger.warn("An unknown CommandService was already registered", e);
+            }
+
             if (Files.notExists(gameDir) || Files.notExists(pluginsDir)) {
                 Files.createDirectories(pluginsDir);
             }
@@ -116,6 +124,26 @@ public final class Quartz {
         getLogger().info("Successfully loaded and initialized plugins.");
 
         game.getEventManager().post(QuartzEventFactory.createStateEvent(LoadCompleteEvent.class, game));
+    }
+
+    @Override
+    public String getId() {
+        return "quartz";
+    }
+
+    @Override
+    public String getName() {
+        return "Quartz";
+    }
+
+    @Override
+    public String getVersion() {
+        return game.getImplementationVersion();
+    }
+
+    @Override
+    public Object getInstance() {
+        return this;
     }
 
 }

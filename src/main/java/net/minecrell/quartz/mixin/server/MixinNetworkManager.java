@@ -21,55 +21,51 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.guice;
+package net.minecrell.quartz.mixin.server;
 
-import com.google.common.base.MoreObjects;
-import org.spongepowered.api.service.config.ConfigDir;
+import io.netty.channel.SimpleChannelInboundHandler;
+import net.minecraft.network.NetworkManager;
+import net.minecrell.quartz.QuartzMinecraftVersion;
+import net.minecrell.quartz.server.ConnectionInfo;
+import org.spongepowered.api.MinecraftVersion;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
-import java.lang.annotation.Annotation;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
+@Mixin(NetworkManager.class)
+public abstract class MixinNetworkManager extends SimpleChannelInboundHandler implements ConnectionInfo {
 
-    private final boolean shared;
+    @Shadow
+    public abstract SocketAddress getRemoteAddress();
 
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
+    private InetSocketAddress virtualHost;
+    private MinecraftVersion version;
+
+    @Override
+    public InetSocketAddress getAddress() {
+        return (InetSocketAddress) getRemoteAddress();
     }
 
     @Override
-    public boolean sharedRoot() {
-        return shared;
+    public InetSocketAddress getVirtualHost() {
+        return this.virtualHost;
     }
 
     @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
+    public void setVirtualHost(String host, int port) {
+        this.virtualHost = InetSocketAddress.createUnresolved(host, port);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ConfigDir)) {
-            return false;
-        }
-
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
+    public MinecraftVersion getVersion() {
+        return this.version;
     }
 
     @Override
-    public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
-                .toString();
+    public void setVersion(int version) {
+        this.version = new QuartzMinecraftVersion(String.valueOf(version), version);
     }
 
 }

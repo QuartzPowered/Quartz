@@ -44,7 +44,7 @@ public class QuartzGuiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(Quartz.class).toInstance(Quartz.getInstance());
+        bind(Quartz.class).toInstance(Quartz.instance);
         bind(Game.class).to(QuartzGame.class).in(Scopes.SINGLETON);
         bind(PluginManager.class).to(QuartzPluginManager.class).in(Scopes.SINGLETON);
         bind(EventManager.class).to(QuartzEventManager.class).in(Scopes.SINGLETON);
@@ -52,7 +52,7 @@ public class QuartzGuiceModule extends AbstractModule {
         bind(ServiceManager.class).to(SimpleServiceManager.class).in(Scopes.SINGLETON);
 
         ConfigDirAnnotation sharedRoot = new ConfigDirAnnotation(true);
-        Path configDir = Quartz.getInstance().getConfigDirectory();
+        Path configDir = Quartz.instance.getConfigDirectory();
 
         bind(Path.class).annotatedWith(sharedRoot).toInstance(configDir);
         bind(File.class).annotatedWith(sharedRoot).toInstance(configDir.toFile());

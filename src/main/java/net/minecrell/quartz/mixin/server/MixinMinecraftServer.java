@@ -21,41 +21,61 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.launch.mixin;
+package net.minecrell.quartz.mixin.server;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.IChatComponent;
 import net.minecrell.quartz.Quartz;
 import net.minecrell.quartz.event.QuartzEventFactory;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.event.state.ServerStartedEvent;
 import org.spongepowered.api.event.state.ServerStoppedEvent;
 import org.spongepowered.api.event.state.ServerStoppingEvent;
+import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
-public abstract class MixinMinecraftServer {
+public abstract class MixinMinecraftServer implements Server, CommandSource {
+
+    @Shadow
+    public abstract void addChatMessage(IChatComponent message);
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;addFaviconToStatusResponse"
             + "(Lnet/minecraft/network/ServerStatusResponse;)V", shift = At.Shift.AFTER))
     public void onServerStarted(CallbackInfo ci) {
-        Game game = Quartz.getInstance().getGame();
+        Game game = Quartz.instance.getGame();
         game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStartedEvent.class, game));
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;finalTick(Lnet/minecraft/crash/CrashReport;)V",
             ordinal = 0, shift = At.Shift.BY, by = -9))
     public void onServerStopping(CallbackInfo ci) {
-        Game game = Quartz.getInstance().getGame();
+        Game game = Quartz.instance.getGame();
         game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStoppingEvent.class, game));
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;systemExitNow()V"))
     public void onServerStopped(CallbackInfo ci) {
-        Game game = Quartz.getInstance().getGame();
+        Game game = Quartz.instance.getGame();
         game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStoppedEvent.class, game));
+    }
+
+    @Override
+    public void sendMessage(String... messages) {
+        for (String message : messages) {
+            addChatMessage(new ChatComponentText(message));
+        }
+    }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        return true;
     }
 
 }

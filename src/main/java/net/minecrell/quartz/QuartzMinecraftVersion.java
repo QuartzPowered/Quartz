@@ -21,30 +21,49 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.guice;
+package net.minecrell.quartz;
 
 import com.google.common.base.MoreObjects;
-import org.spongepowered.api.service.config.ConfigDir;
+import org.spongepowered.api.MinecraftVersion;
 
-import java.lang.annotation.Annotation;
+public class QuartzMinecraftVersion implements ProtocolMinecraftVersion {
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
+    private final String name;
+    private final int protocol;
 
-    private final boolean shared;
+    public QuartzMinecraftVersion(String name, int protocol) {
+        this.name = name;
+        this.protocol = protocol;
+    }
 
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
+    public static int compare(ProtocolMinecraftVersion version, MinecraftVersion to) {
+        if (version.equals(to)) {
+            return 0;
+        } else if (to.isLegacy()) {
+            return 1;
+        } else {
+            return version.getProtocol() - ((ProtocolMinecraftVersion) to).getProtocol();
+        }
     }
 
     @Override
-    public boolean sharedRoot() {
-        return shared;
+    public String getName() {
+        return this.name;
     }
 
     @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
+    public int getProtocol() {
+        return this.protocol;
+    }
+
+    @Override
+    public boolean isLegacy() {
+        return false;
+    }
+
+    @Override
+    public int compareTo(MinecraftVersion o) {
+        return compare(this, o);
     }
 
     @Override
@@ -52,24 +71,25 @@ class ConfigDirAnnotation implements ConfigDir {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ConfigDir)) {
+        if (!(o instanceof ProtocolMinecraftVersion)) {
             return false;
         }
 
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
+        ProtocolMinecraftVersion that = (ProtocolMinecraftVersion) o;
+        return this.getProtocol() == that.getProtocol();
+
     }
 
     @Override
     public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
+        return this.protocol;
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
+        return MoreObjects.toStringHelper(this)
+                .add("name", this.name)
+                .add("protocol", this.protocol)
                 .toString();
     }
-
 }

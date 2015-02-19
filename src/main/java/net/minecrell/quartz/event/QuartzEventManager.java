@@ -50,7 +50,9 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class QuartzEventManager implements EventManager {
 
     private final Object lock = new Object();

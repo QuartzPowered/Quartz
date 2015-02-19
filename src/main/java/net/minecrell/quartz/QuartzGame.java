@@ -25,6 +25,7 @@ package net.minecrell.quartz;
 
 import com.google.common.base.Optional;
 import net.minecraft.server.MinecraftServer;
+import net.minecrell.quartz.event.QuartzEventManager;
 import net.minecrell.quartz.plugin.QuartzPluginManager;
 import org.apache.commons.lang3.NotImplementedException;
 import org.spongepowered.api.Game;
@@ -34,21 +35,27 @@ import org.spongepowered.api.Platform;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.service.ServiceManager;
 import org.spongepowered.api.service.command.CommandService;
-import org.spongepowered.api.service.event.EventManager;
 import org.spongepowered.api.service.scheduler.AsynchronousScheduler;
 import org.spongepowered.api.service.scheduler.SynchronousScheduler;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class QuartzGame implements Game {
 
+    private static final String API_VERSION = QuartzGame.class.getPackage().getSpecificationVersion();
+    private static final String IMPLEMENTATION_VERSION = QuartzGame.class.getPackage().getImplementationVersion();
+
+    private static final MinecraftVersion MINECRAFT_VERSION = new QuartzMinecraftVersion("1.8", 47);
+
     private final QuartzPluginManager pluginManager;
-    private final EventManager eventManager;
+    private final QuartzEventManager eventManager;
     private final GameRegistry gameRegistry;
     private final ServiceManager serviceManager;
 
     @Inject
-    public QuartzGame(QuartzPluginManager pluginManager, EventManager eventManager, GameRegistry gameRegistry, ServiceManager serviceManager) {
+    public QuartzGame(QuartzPluginManager pluginManager, QuartzEventManager eventManager, GameRegistry gameRegistry, ServiceManager serviceManager) {
         this.pluginManager = pluginManager;
         this.eventManager = eventManager;
         this.gameRegistry = gameRegistry;
@@ -71,7 +78,7 @@ public class QuartzGame implements Game {
     }
 
     @Override
-    public EventManager getEventManager() {
+    public QuartzEventManager getEventManager() {
         return eventManager;
     }
 
@@ -97,21 +104,22 @@ public class QuartzGame implements Game {
 
     @Override
     public CommandService getCommandDispatcher() {
-        throw new NotImplementedException("TODO");
+        return serviceManager.provideUnchecked(CommandService.class);
     }
 
     @Override
     public String getApiVersion() {
-        throw new NotImplementedException("TODO");
+        return API_VERSION;
     }
 
     @Override
     public String getImplementationVersion() {
-        throw new NotImplementedException("TODO");
+        return IMPLEMENTATION_VERSION;
     }
 
     @Override
     public MinecraftVersion getMinecraftVersion() {
-        throw new NotImplementedException("TODO");
+        return MINECRAFT_VERSION;
     }
+
 }

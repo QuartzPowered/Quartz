@@ -21,30 +21,39 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.guice;
+package net.minecrell.quartz.status;
 
 import com.google.common.base.MoreObjects;
-import org.spongepowered.api.service.config.ConfigDir;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import net.minecraft.network.NetworkManager;
+import net.minecrell.quartz.server.ConnectionInfo;
+import org.spongepowered.api.MinecraftVersion;
+import org.spongepowered.api.status.StatusClient;
 
-import java.lang.annotation.Annotation;
+import java.net.InetSocketAddress;
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
+public class QuartzStatusClient implements StatusClient {
 
-    private final boolean shared;
+    private final ConnectionInfo connection;
 
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
+    public QuartzStatusClient(NetworkManager networkManager) {
+        this.connection = (ConnectionInfo) networkManager;
     }
 
     @Override
-    public boolean sharedRoot() {
-        return shared;
+    public InetSocketAddress getAddress() {
+        return this.connection.getAddress();
     }
 
     @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
+    public MinecraftVersion getVersion() {
+        return this.connection.getVersion();
+    }
+
+    @Override
+    public Optional<InetSocketAddress> getVirtualHost() {
+        return Optional.fromNullable(this.connection.getVirtualHost());
     }
 
     @Override
@@ -52,24 +61,24 @@ class ConfigDirAnnotation implements ConfigDir {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ConfigDir)) {
+        if (!(o instanceof QuartzStatusClient)) {
             return false;
         }
 
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
+        QuartzStatusClient that = (QuartzStatusClient) o;
+        return Objects.equal(this.connection, that.connection);
+
     }
 
     @Override
     public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
+        return this.connection.hashCode();
     }
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
+        return MoreObjects.toStringHelper(this)
+                .addValue(this.connection)
                 .toString();
     }
-
 }

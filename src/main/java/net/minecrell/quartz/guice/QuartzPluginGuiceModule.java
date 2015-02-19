@@ -61,9 +61,11 @@ public class QuartzPluginGuiceModule extends AbstractModule {
         bind(File.class).annotatedWith(privateConfigDir).toProvider(FilePrivateConfigDirProvider.class);
         bind(File.class).annotatedWith(sharedConfigFile).toProvider(SharedConfigFileProvider.class);
         bind(File.class).annotatedWith(privateConfigFile).toProvider(PrivateConfigFileProvider.class);
-        bind(new TypeLiteral<ConfigurationLoader<CommentedConfigurationNode>>() {}).annotatedWith(sharedConfigFile)
+        bind(new TypeLiteral<ConfigurationLoader<CommentedConfigurationNode>>() {
+        }).annotatedWith(sharedConfigFile)
                 .toProvider(SharedHoconConfigProvider.class);
-        bind(new TypeLiteral<ConfigurationLoader<CommentedConfigurationNode>>() {}).annotatedWith(privateConfigFile)
+        bind(new TypeLiteral<ConfigurationLoader<CommentedConfigurationNode>>() {
+        }).annotatedWith(privateConfigFile)
                 .toProvider(PrivateHoconConfigProvider.class);
     }
 

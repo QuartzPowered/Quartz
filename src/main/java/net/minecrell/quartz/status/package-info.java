@@ -21,4 +21,4 @@
  * THE SOFTWARE.
  */
 
-@org.spongepowered.api.util.annotation.NonnullByDefault package net.minecrell.quartz.launch.mixin;
+@org.spongepowered.api.util.annotation.NonnullByDefault package net.minecrell.quartz.status;

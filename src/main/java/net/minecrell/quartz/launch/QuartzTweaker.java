@@ -55,6 +55,7 @@ public final class QuartzTweaker implements ITweaker {
         loader.addClassLoaderExclusion("joptsimple.");
         loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
         loader.addClassLoaderExclusion("org.spongepowered.tools.");
+        loader.addClassLoaderExclusion("net.minecrell.quartz.mixin.");
 
         // Check if we're running in deobfuscated environment already
         logger.info("Enabling runtime deobfuscation...");

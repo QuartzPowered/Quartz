@@ -1,8 +1,17 @@
 {
-    "package": "net.minecrell.quartz.launch.mixin",
+    "package": "net.minecrell.quartz.mixin",
     "refmap": "mixins.quartz.refmap.json",
     "server": [
-        "MixinMinecraftServer",
-        "MixinDedicatedServer"
+        "MixinGameProfile",
+        "server.MixinDedicatedServer",
+        "server.MixinMinecraftServer",
+        "server.MixinNetHandlerHandshakeTCP",
+        "server.MixinNetworkManager",
+        "server.MixinServerCommandManager",
+        "status.MixinMinecraftProtocolVersionIdentifier",
+        "status.MixinNetHandlerStatusServer",
+        "status.MixinPingResponseHandler",
+        "status.MixinPlayerCountData",
+        "status.MixinServerStatusResponse"
     ]
 }

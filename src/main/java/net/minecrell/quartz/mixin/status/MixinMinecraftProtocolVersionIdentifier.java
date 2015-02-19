@@ -21,55 +21,41 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.guice;
+package net.minecrell.quartz.mixin.status;
 
-import com.google.common.base.MoreObjects;
-import org.spongepowered.api.service.config.ConfigDir;
+import net.minecraft.network.ServerStatusResponse;
+import net.minecrell.quartz.ProtocolMinecraftVersion;
+import net.minecrell.quartz.QuartzMinecraftVersion;
+import org.spongepowered.api.MinecraftVersion;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
-import java.lang.annotation.Annotation;
+@Mixin(ServerStatusResponse.MinecraftProtocolVersionIdentifier.class)
+public abstract class MixinMinecraftProtocolVersionIdentifier implements ProtocolMinecraftVersion {
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
+    @Shadow
+    private String name;
+    @Shadow
+    private int protocol;
 
-    private final boolean shared;
-
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
+    @Override
+    public String getName() {
+        return this.name;
     }
 
     @Override
-    public boolean sharedRoot() {
-        return shared;
+    public int getProtocol() {
+        return this.protocol;
     }
 
     @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
+    public boolean isLegacy() {
+        return false;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ConfigDir)) {
-            return false;
-        }
-
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
-    }
-
-    @Override
-    public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
-                .toString();
+    public int compareTo(MinecraftVersion o) {
+        return QuartzMinecraftVersion.compare(this, o);
     }
 
 }
