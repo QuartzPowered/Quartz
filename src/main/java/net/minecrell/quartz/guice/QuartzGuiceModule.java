@@ -37,6 +37,9 @@ import org.spongepowered.api.service.ServiceManager;
 import org.spongepowered.api.service.SimpleServiceManager;
 import org.spongepowered.api.service.event.EventManager;
 
+import java.io.File;
+import java.nio.file.Path;
+
 public class QuartzGuiceModule extends AbstractModule {
 
     @Override
@@ -47,6 +50,12 @@ public class QuartzGuiceModule extends AbstractModule {
         bind(EventManager.class).to(QuartzEventManager.class).in(Scopes.SINGLETON);
         bind(GameRegistry.class).to(QuartzGameRegistry.class).in(Scopes.SINGLETON);
         bind(ServiceManager.class).to(SimpleServiceManager.class).in(Scopes.SINGLETON);
+
+        ConfigDirAnnotation sharedRoot = new ConfigDirAnnotation(true);
+        Path configDir = Quartz.getInstance().getConfigDirectory();
+
+        bind(Path.class).annotatedWith(sharedRoot).toInstance(configDir);
+        bind(File.class).annotatedWith(sharedRoot).toInstance(configDir.toFile());
     }
 
 }

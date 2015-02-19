@@ -24,11 +24,27 @@
 package net.minecrell.quartz.guice;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provider;
+import com.google.inject.TypeLiteral;
 import net.minecrell.quartz.plugin.QuartzPluginContainer;
+import ninja.leaping.configurate.commented.CommentedConfigurationNode;
+import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
+import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.plugin.PluginContainer;
+import org.spongepowered.api.service.config.ConfigDir;
+import org.spongepowered.api.service.config.DefaultConfig;
+
+import java.io.File;
+import java.nio.file.Path;
+
+import javax.inject.Inject;
 
 public class QuartzPluginGuiceModule extends AbstractModule {
+
+    private static final ConfigDir privateConfigDir = new ConfigDirAnnotation(false);
+    private static final DefaultConfig sharedConfigFile = new ConfigFileAnnotation(true);
+    private static final DefaultConfig privateConfigFile = new ConfigFileAnnotation(false);
 
     private final QuartzPluginContainer container;
 
@@ -40,6 +56,116 @@ public class QuartzPluginGuiceModule extends AbstractModule {
     protected void configure() {
         bind(PluginContainer.class).toInstance(container);
         bind(Logger.class).toInstance(container.getLogger());
-        // TODO
+
+        bind(Path.class).annotatedWith(privateConfigDir).toProvider(PrivateConfigDirProvider.class);
+        bind(File.class).annotatedWith(privateConfigDir).toProvider(FilePrivateConfigDirProvider.class);
+        bind(File.class).annotatedWith(sharedConfigFile).toProvider(SharedConfigFileProvider.class);
+        bind(File.class).annotatedWith(privateConfigFile).toProvider(PrivateConfigFileProvider.class);
+        bind(new TypeLiteral<ConfigurationLoader<CommentedConfigurationNode>>() {}).annotatedWith(sharedConfigFile)
+                .toProvider(SharedHoconConfigProvider.class);
+        bind(new TypeLiteral<ConfigurationLoader<CommentedConfigurationNode>>() {}).annotatedWith(privateConfigFile)
+                .toProvider(PrivateHoconConfigProvider.class);
     }
+
+    private static class PrivateConfigDirProvider implements Provider<Path> {
+
+        private final PluginContainer container;
+        private final Path configDir;
+
+        @Inject
+        private PrivateConfigDirProvider(PluginContainer container, @ConfigDir(sharedRoot = true) Path configDir) {
+            this.container = container;
+            this.configDir = configDir;
+        }
+
+        @Override
+        public Path get() {
+            return configDir.resolve(container.getId());
+        }
+    }
+
+    private static class FilePrivateConfigDirProvider implements Provider<File> {
+
+        private final Path configDir;
+
+        @Inject
+        private FilePrivateConfigDirProvider(PluginContainer container, @ConfigDir(sharedRoot = false) Path configDir) {
+            this.configDir = configDir;
+        }
+
+        @Override
+        public File get() {
+            return configDir.toFile();
+        }
+
+    }
+
+    private static class PrivateConfigFileProvider implements Provider<File> {
+
+        private final PluginContainer container;
+        private final Path configDir;
+
+        @Inject
+        private PrivateConfigFileProvider(PluginContainer container, @ConfigDir(sharedRoot = false) Path configDir) {
+            this.container = container;
+            this.configDir = configDir;
+        }
+
+        @Override
+        public File get() {
+            return configDir.resolve(container.getId() + ".conf").toFile();
+        }
+
+    }
+
+    private static class SharedConfigFileProvider implements Provider<File> {
+
+        private final PluginContainer container;
+        private final Path configDir;
+
+        @Inject
+        private SharedConfigFileProvider(PluginContainer container, @ConfigDir(sharedRoot = true) Path configDir) {
+            this.container = container;
+            this.configDir = configDir;
+        }
+
+        @Override
+        public File get() {
+            return configDir.resolve(container.getId() + ".conf").toFile();
+        }
+
+    }
+
+    private static class SharedHoconConfigProvider implements Provider<ConfigurationLoader<CommentedConfigurationNode>> {
+
+        private final File configFile;
+
+        @Inject
+        private SharedHoconConfigProvider(@DefaultConfig(sharedRoot = true) File configFile) {
+            this.configFile = configFile;
+        }
+
+        @Override
+        public ConfigurationLoader<CommentedConfigurationNode> get() {
+            return HoconConfigurationLoader.builder().setFile(this.configFile).build();
+        }
+
+    }
+
+    private static class PrivateHoconConfigProvider implements Provider<ConfigurationLoader<CommentedConfigurationNode>> {
+
+        private final File configFile;
+
+        @Inject
+        private PrivateHoconConfigProvider(@DefaultConfig(sharedRoot = false) File configFile) {
+            this.configFile = configFile;
+        }
+
+        @Override
+        public ConfigurationLoader<CommentedConfigurationNode> get() {
+            return HoconConfigurationLoader.builder().setFile(this.configFile).build();
+        }
+
+    }
+
 }

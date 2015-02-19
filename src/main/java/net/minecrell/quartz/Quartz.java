@@ -60,12 +60,14 @@ public final class Quartz {
 
     private final Path gameDir;
     private final Path pluginsDir;
+    private final Path configDir;
 
     private QuartzGame game;
 
     private Quartz() {
         this.gameDir = QuartzLaunch.getGameDirectory();
         this.pluginsDir = gameDir.resolve("plugins");
+        this.configDir = gameDir.resolve("config");
     }
 
     public Game getGame() {
@@ -82,6 +84,10 @@ public final class Quartz {
 
     public Path getPluginsDirectory() {
         return pluginsDir;
+    }
+
+    public Path getConfigDirectory() {
+        return configDir;
     }
 
     public void load() {
