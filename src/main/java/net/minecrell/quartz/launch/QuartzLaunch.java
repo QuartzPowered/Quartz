@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz;
+package net.minecrell.quartz.launch;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;

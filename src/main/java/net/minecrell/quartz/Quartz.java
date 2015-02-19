@@ -28,6 +28,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import net.minecrell.quartz.event.QuartzEventFactory;
 import net.minecrell.quartz.guice.QuartzGuiceModule;
+import net.minecrell.quartz.launch.QuartzLaunch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.api.Game;

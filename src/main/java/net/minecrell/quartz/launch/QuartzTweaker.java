@@ -23,7 +23,6 @@
 
 package net.minecrell.quartz.launch;
 
-import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
@@ -34,7 +33,6 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -42,13 +40,9 @@ public final class QuartzTweaker implements ITweaker {
 
     private static final Logger logger = LogManager.getLogger();
 
-    private static final String QUARTZ_LAUNCH_CLASS = "net.minecrell.quartz.QuartzLaunch";
-
-    private Path gameDir;
-
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        this.gameDir = gameDir != null ? gameDir.toPath() : Paths.get("");
+        QuartzLaunch.initialize(gameDir != null ? gameDir.toPath() : Paths.get(""));
     }
 
     @Override
@@ -82,13 +76,6 @@ public final class QuartzTweaker implements ITweaker {
         env.addConfiguration("mixins.quartz.json");
         env.setSide(MixinEnvironment.Side.SERVER);
         loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
-
-        try {
-            Class<?> quartzLaunch = Class.forName(QUARTZ_LAUNCH_CLASS, true, loader);
-            quartzLaunch.getMethod("initialize", Path.class).invoke(null, gameDir);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
 
         logger.info("Done! Starting Minecraft server...");
     }
