@@ -48,7 +48,7 @@ public abstract class MixinDedicatedServer extends MinecraftServer {
     }
 
     @Inject(method = "startServer", at = @At(value = "INVOKE_STRING", target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V",
-            args = {"ldc=Loading properties"}, shift = At.Shift.BY, by = -2))
+            args = {"ldc=Loading properties"}, shift = At.Shift.BY, by = -2, remap = false))
     public void onServerLoad(CallbackInfoReturnable<Boolean> ci) {
         Quartz.instance.load();
     }
