@@ -31,8 +31,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecrell.quartz.Quartz;
-import net.minecrell.quartz.event.QuartzEventFactory;
-import org.spongepowered.api.Game;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.event.state.ServerStartedEvent;
 import org.spongepowered.api.event.state.ServerStoppedEvent;
@@ -53,21 +51,18 @@ public abstract class MixinMinecraftServer implements Server, CommandSource {
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;addFaviconToStatusResponse"
             + "(Lnet/minecraft/network/ServerStatusResponse;)V", shift = At.Shift.AFTER))
     public void onServerStarted(CallbackInfo ci) {
-        Game game = Quartz.instance.getGame();
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStartedEvent.class, game));
+        Quartz.instance.postState(ServerStartedEvent.class);
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;finalTick(Lnet/minecraft/crash/CrashReport;)V",
             ordinal = 0, shift = At.Shift.BY, by = -9))
     public void onServerStopping(CallbackInfo ci) {
-        Game game = Quartz.instance.getGame();
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStoppingEvent.class, game));
+        Quartz.instance.postState(ServerStoppingEvent.class);
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;systemExitNow()V"))
     public void onServerStopped(CallbackInfo ci) {
-        Game game = Quartz.instance.getGame();
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStoppedEvent.class, game));
+        Quartz.instance.postState(ServerStoppedEvent.class);
     }
 
     @Override

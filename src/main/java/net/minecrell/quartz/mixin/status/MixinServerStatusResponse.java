@@ -53,14 +53,16 @@ public abstract class MixinServerStatusResponse implements StatusPingEvent.Respo
     private IChatComponent serverMotd;
     private Message description;
 
-    @Shadow @Nullable
+    @Shadow
+    @Nullable
     private ServerStatusResponse.PlayerCountData playerCount;
     @Nullable private ServerStatusResponse.PlayerCountData playerBackup;
 
     @Shadow
     private ServerStatusResponse.MinecraftProtocolVersionIdentifier protocolVersion;
 
-    @Shadow @Nullable
+    @Shadow
+    @Nullable
     private String favicon;
     @Nullable private Favicon faviconHandle;
 

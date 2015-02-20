@@ -30,8 +30,6 @@ package net.minecrell.quartz.mixin.server;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecrell.quartz.Quartz;
-import net.minecrell.quartz.event.QuartzEventFactory;
-import org.spongepowered.api.Game;
 import org.spongepowered.api.event.state.ServerAboutToStartEvent;
 import org.spongepowered.api.event.state.ServerStartingEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -64,15 +62,13 @@ public abstract class MixinDedicatedServer extends MinecraftServer {
     @Inject(method = "startServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/DedicatedServer;loadAllWorlds"
             + "(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/WorldType;Ljava/lang/String;)V", shift = At.Shift.BY, by = -24))
     public void onServerAboutToStart(CallbackInfoReturnable<Boolean> ci) {
-        Game game = Quartz.instance.getGame();
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerAboutToStartEvent.class, game));
+        Quartz.instance.postState(ServerAboutToStartEvent.class);
     }
 
     @Inject(method = "startServer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/DedicatedServer;loadAllWorlds"
             + "(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/world/WorldType;Ljava/lang/String;)V", shift = At.Shift.AFTER))
     public void onServerStarting(CallbackInfoReturnable<Boolean> ci) {
-        Game game = Quartz.instance.getGame();
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(ServerStartingEvent.class, game));
+        Quartz.instance.postState(ServerStartingEvent.class);
     }
 
 }

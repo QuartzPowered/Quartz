@@ -41,6 +41,7 @@ import org.spongepowered.api.event.state.InitializationEvent;
 import org.spongepowered.api.event.state.LoadCompleteEvent;
 import org.spongepowered.api.event.state.PostInitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
+import org.spongepowered.api.event.state.StateEvent;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.ProviderExistsException;
 import org.spongepowered.api.service.command.CommandService;
@@ -114,20 +115,24 @@ public final class Quartz implements PluginContainer {
 
             getLogger().info("Loading plugins...");
             game.getPluginManager().loadPlugins();
-            game.getEventManager().post(QuartzEventFactory.createStateEvent(ConstructionEvent.class, game));
+            postState(ConstructionEvent.class);
             getLogger().info("Done! Initializing plugins...");
-            game.getEventManager().post(QuartzEventFactory.createStateEvent(PreInitializationEvent.class, game));
+            postState(PreInitializationEvent.class);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
     public void initialize() {
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(InitializationEvent.class, game));
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(PostInitializationEvent.class, game));
+        postState(InitializationEvent.class);
+        postState(PostInitializationEvent.class);
         getLogger().info("Successfully loaded and initialized plugins.");
 
-        game.getEventManager().post(QuartzEventFactory.createStateEvent(LoadCompleteEvent.class, game));
+        postState(LoadCompleteEvent.class);
+    }
+
+    public void postState(Class<? extends StateEvent> type) {
+        game.getEventManager().post(QuartzEventFactory.createStateEvent(type, game));
     }
 
     @Override
