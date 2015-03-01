@@ -54,7 +54,7 @@ ext {
 
 minecraft {
     version = '1.8'
-    mappings = 'snapshot_20150227'
+    mappings = 'snapshot_20150301'
     tweaker = 'net.minecrell.quartz.launch.QuartzTweaker'
 }
 
