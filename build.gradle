@@ -60,7 +60,7 @@ minecraft {
 
 dependencies {
     compile project('SpongeAPI')
-    compile('org.spongepowered:mixin:0.1-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.2-SNAPSHOT') {
         exclude module: 'launchwrapper'
     }
 
