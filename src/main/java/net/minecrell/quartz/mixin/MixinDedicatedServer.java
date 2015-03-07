@@ -25,15 +25,23 @@
  * THE SOFTWARE.
  */
 
-package net.minecraft.server;
+package net.minecrell.quartz.mixin;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecraft.server.DedicatedServer;
+import net.minecraft.server.MinecraftServer;
+import org.apache.logging.log4j.LogManager;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 
 import java.io.IOException;
 
-public abstract class MinecraftServer {
+@Mixin(DedicatedServer.class)
+public abstract class MixinDedicatedServer extends MinecraftServer {
 
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
+    @Override @Overwrite
+    protected boolean startServer() throws IOException {
+        LogManager.getLogger().info("OHAI");
+        return false;
+    }
 
 }

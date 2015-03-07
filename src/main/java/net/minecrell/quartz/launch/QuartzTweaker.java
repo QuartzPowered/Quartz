@@ -86,6 +86,9 @@ public final class QuartzTweaker implements ITweaker {
         // The server GUI won't work if we don't exclude this: log4j2 wants to have this in the same classloader
         loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
+        logger.info("Initializing mappings...");
+        loader.registerTransformer(getClass("mappings.MappingsTransformer"));
+
         logger.info("Initializing Mixin environment...");
         MixinBootstrap.init();
         MixinEnvironment env = MixinEnvironment.getCurrentEnvironment();
@@ -94,6 +97,10 @@ public final class QuartzTweaker implements ITweaker {
         loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
 
         logger.info("Done! Starting Minecraft server...");
+    }
+
+    private static String getClass(String path) {
+        return QuartzTweaker.class.getPackage().getName() + '.' + path;
     }
 
     @Override

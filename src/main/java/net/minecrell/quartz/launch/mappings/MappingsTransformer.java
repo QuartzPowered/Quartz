@@ -25,15 +25,26 @@
  * THE SOFTWARE.
  */
 
-package net.minecraft.server;
+package net.minecrell.quartz.launch.mappings;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecraft.launchwrapper.IClassNameTransformer;
+import net.minecraft.launchwrapper.IClassTransformer;
 
-import java.io.IOException;
+public class MappingsTransformer implements IClassTransformer, IClassNameTransformer {
 
-public abstract class MinecraftServer {
+    @Override
+    public String unmapClassName(String name) {
+        return name;
+    }
 
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
+    @Override
+    public String remapClassName(String name) {
+        return name;
+    }
+
+    @Override
+    public byte[] transform(String name, String transformedName, byte[] basicClass) {
+        return basicClass;
+    }
 
 }

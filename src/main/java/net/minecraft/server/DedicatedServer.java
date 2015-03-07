@@ -29,11 +29,7 @@ package net.minecraft.server;
 
 import net.minecrell.quartz.launch.mappings.Mapping;
 
-import java.io.IOException;
-
-public abstract class MinecraftServer {
-
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
+@Mapping("po")
+public abstract class DedicatedServer extends MinecraftServer {
 
 }
