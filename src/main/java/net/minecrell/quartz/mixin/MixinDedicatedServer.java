@@ -28,7 +28,7 @@
 package net.minecrell.quartz.mixin;
 
 import net.minecraft.server.DedicatedServer;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.MinecraftServer2;
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -36,7 +36,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import java.io.IOException;
 
 @Mixin(DedicatedServer.class)
-public abstract class MixinDedicatedServer extends MinecraftServer {
+public abstract class MixinDedicatedServer extends MinecraftServer2 {
 
     @Override @Overwrite
     protected boolean startServer() throws IOException {

@@ -31,7 +31,8 @@ import net.minecrell.quartz.launch.mappings.Mapping;
 
 import java.io.IOException;
 
-public abstract class MinecraftServer {
+@Mapping("net/minecraft/server/MinecraftServer") // TODO: Rename this to MinecraftServer somehow
+public abstract class MinecraftServer2 {
 
     @Mapping("i")
     protected abstract boolean startServer() throws IOException;

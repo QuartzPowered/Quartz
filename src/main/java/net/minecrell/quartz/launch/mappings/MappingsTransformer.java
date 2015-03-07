@@ -32,6 +32,17 @@ import net.minecraft.launchwrapper.IClassTransformer;
 
 public class MappingsTransformer implements IClassTransformer, IClassNameTransformer {
 
+    private final Mappings mappings;
+
+    public MappingsTransformer() {
+        this(Mappings.getInstance());
+    }
+
+    // For custom transformers
+    protected MappingsTransformer(Mappings mappings) {
+        this.mappings = mappings;
+    }
+
     @Override
     public String unmapClassName(String name) {
         return name;

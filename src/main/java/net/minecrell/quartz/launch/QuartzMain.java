@@ -46,16 +46,11 @@ public final class QuartzMain {
     private QuartzMain() {
     }
 
-    private static final String MINECRAFT_SERVER_LOCAL = "minecraft_server.1.8.jar";
-    private static final String MINECRAFT_SERVER_REMOTE = "https://s3.amazonaws.com/Minecraft.Download/versions/1.8/minecraft_server.1.8.jar";
+    public static final String MINECRAFT_SERVER_LOCAL = "minecraft_server.1.8.3.jar";
+    private static final String MINECRAFT_SERVER_REMOTE = "https://s3.amazonaws.com/Minecraft.Download/versions/1.8.3/minecraft_server.1.8.3.jar";
 
     private static final String LAUNCHWRAPPER_LOCAL = "launchwrapper-1.11.jar";
     private static final String LAUNCHWRAPPER_REMOTE = "https://libraries.minecraft.net/net/minecraft/launchwrapper/1.11/launchwrapper-1.11.jar";
-
-    private static final String DEOBF_SRG_LOCAL = "deobf.srg.gz";
-    private static final String DEOBF_SRG_REMOTE =
-            "https://raw.githubusercontent.com/MinecraftForge/FML/c30e86bdc1cfcd3c68d555ea54c151780fa79864/conf/joined.srg";
-    private static final String DEOBF_SRG_HASH = "93f72f87b5505dcbf1ce1c0f5b70f4fa";
 
     public static void main(String[] args) throws Exception {
         if (!checkMinecraft()) {
@@ -87,13 +82,15 @@ public final class QuartzMain {
             return false;
         }
 
-        path = bin.resolve(LAUNCHWRAPPER_LOCAL);
-        if (Files.notExists(path) && !downloadVerified(LAUNCHWRAPPER_REMOTE, path)) {
-            return false;
+        // Maybe Launchwrapper is on the classpath already? (E.g. in development environment)
+        try {
+            Class.forName("net.minecraft.launchwrapper.Launch");
+            return true;
+        } catch (ClassNotFoundException ignored) {
         }
 
-        path = bin.resolve(DEOBF_SRG_LOCAL);
-        return Files.exists(path) || downloadVerified(DEOBF_SRG_REMOTE, path, DEOBF_SRG_HASH);
+        path = bin.resolve(LAUNCHWRAPPER_LOCAL);
+        return Files.exists(path) || downloadVerified(LAUNCHWRAPPER_REMOTE, path);
     }
 
     private static boolean downloadVerified(String remote, Path path) throws Exception {
@@ -102,15 +99,11 @@ public final class QuartzMain {
 
     private static boolean downloadVerified(String remote, Path path, String expected) throws Exception {
         String name = path.getFileName().toString();
-        boolean gzip = name.endsWith(".gz");
         URL url = new URL(remote);
 
         System.out.println("Downloading " + name + "... This can take a while.");
         System.out.println(url);
         URLConnection con = url.openConnection();
-        if (gzip) {
-            con.addRequestProperty("Accept-Encoding", "gzip");
-        }
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
 

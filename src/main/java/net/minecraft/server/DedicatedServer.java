@@ -30,6 +30,6 @@ package net.minecraft.server;
 import net.minecrell.quartz.launch.mappings.Mapping;
 
 @Mapping("po")
-public abstract class DedicatedServer extends MinecraftServer {
+public abstract class DedicatedServer extends MinecraftServer2 {
 
 }

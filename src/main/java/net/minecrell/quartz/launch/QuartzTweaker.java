@@ -26,9 +26,10 @@
  */
 package net.minecrell.quartz.launch;
 
+import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.ITweaker;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecrell.quartz.launch.mappings.Mappings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.launch.MixinBootstrap;
@@ -36,6 +37,7 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -43,64 +45,71 @@ public final class QuartzTweaker implements ITweaker {
 
     private static final Logger logger = LogManager.getLogger();
 
+    private Path gameDir;
+
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        QuartzLaunch.initialize(gameDir != null ? gameDir.toPath() : Paths.get(""));
+        this.gameDir = gameDir != null ? gameDir.toPath() : Paths.get("");
+        QuartzLaunch.initialize(this.gameDir);
     }
 
     @Override
     public void injectIntoClassLoader(LaunchClassLoader loader) {
-        logger.info("Initializing Quartz...");
 
-        // Would rather not load these through Launchwrapper as they use native dependencies
-        loader.addClassLoaderExclusion("com.sun.");
-        loader.addClassLoaderExclusion("oshi.");
-        loader.addClassLoaderExclusion("io.netty.");
+        try {
+            logger.info("Initializing Quartz...");
 
-        // Some libraries shouldn't get transformed, don't even give the chance for that
-        loader.addTransformerExclusion("joptsimple.");
+            // Load Minecraft Server
+            loader.addURL(gameDir.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL).toUri().toURL());
 
-        // Minecraft Server libraries
-        loader.addTransformerExclusion("com.google.gson.");
-        loader.addTransformerExclusion("org.apache.commons.codec.");
-        loader.addTransformerExclusion("org.apache.commons.io.");
-        loader.addTransformerExclusion("org.apache.commons.lang3.");
+            // Would rather not load these through Launchwrapper as they use native dependencies
+            loader.addClassLoaderExclusion("com.sun.");
+            loader.addClassLoaderExclusion("oshi.");
+            loader.addClassLoaderExclusion("io.netty.");
 
-        // SpongeAPI
-        loader.addTransformerExclusion("com.flowpowered.math.");
-        loader.addTransformerExclusion("org.slf4j.");
+            // Some libraries shouldn't get transformed, don't even give the chance for that
+            loader.addTransformerExclusion("joptsimple.");
 
-        // Guice
-        loader.addTransformerExclusion("com.google.inject.");
-        loader.addTransformerExclusion("org.aopalliance.");
+            // Minecraft Server libraries
+            loader.addTransformerExclusion("com.google.gson.");
+            loader.addTransformerExclusion("org.apache.commons.codec.");
+            loader.addTransformerExclusion("org.apache.commons.io.");
+            loader.addTransformerExclusion("org.apache.commons.lang3.");
 
-        // configurate
-        loader.addTransformerExclusion("ninja.leaping.configurate.");
-        loader.addTransformerExclusion("com.googlecode.concurrentlinkedhashmap.");
-        loader.addTransformerExclusion("com.typesafe.config.");
+            // SpongeAPI
+            loader.addTransformerExclusion("com.flowpowered.math.");
+            loader.addTransformerExclusion("org.slf4j.");
 
-        // Mixins
-        loader.addClassLoaderExclusion("org.spongepowered.tools.");
-        loader.addClassLoaderExclusion("net.minecrell.quartz.mixin.");
+            // Guice
+            loader.addTransformerExclusion("com.google.inject.");
+            loader.addTransformerExclusion("org.aopalliance.");
 
-        // The server GUI won't work if we don't exclude this: log4j2 wants to have this in the same classloader
-        loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
+            // configurate
+            loader.addTransformerExclusion("ninja.leaping.configurate.");
+            loader.addTransformerExclusion("com.googlecode.concurrentlinkedhashmap.");
+            loader.addTransformerExclusion("com.typesafe.config.");
 
-        logger.info("Initializing mappings...");
-        loader.registerTransformer(getClass("mappings.MappingsTransformer"));
+            // Mixins
+            loader.addClassLoaderExclusion("org.spongepowered.tools.");
+            loader.addClassLoaderExclusion("net.minecrell.quartz.mixin.");
 
-        logger.info("Initializing Mixin environment...");
-        MixinBootstrap.init();
-        MixinEnvironment env = MixinEnvironment.getCurrentEnvironment();
-        env.addConfiguration("mixins.quartz.json");
-        env.setSide(MixinEnvironment.Side.SERVER);
-        loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
+            // The server GUI won't work if we don't exclude this: log4j2 wants to have this in the same classloader
+            loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
-        logger.info("Done! Starting Minecraft server...");
-    }
+            logger.info("Initializing Mappings...");
+            Mappings.initialize(loader);
 
-    private static String getClass(String path) {
-        return QuartzTweaker.class.getPackage().getName() + '.' + path;
+            logger.info("Initializing Mixin environment...");
+            MixinBootstrap.init();
+            MixinEnvironment env = MixinEnvironment.getCurrentEnvironment();
+            env.addConfiguration("mixins.quartz.json");
+            env.setSide(MixinEnvironment.Side.SERVER);
+            loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
+
+            logger.info("Done! Starting Minecraft server...");
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Override

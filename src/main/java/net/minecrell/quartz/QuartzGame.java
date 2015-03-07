@@ -29,7 +29,6 @@ package net.minecrell.quartz;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
-import net.minecraft.server.MinecraftServer;
 import net.minecrell.quartz.event.QuartzEventManager;
 import net.minecrell.quartz.plugin.QuartzPluginManager;
 import org.apache.commons.lang3.NotImplementedException;
@@ -73,7 +72,7 @@ public class QuartzGame implements Game {
 
     @Override
     public Optional<Server> getServer() {
-        return Optional.fromNullable((Server) MinecraftServer.getInstance());
+        throw new NotImplementedException("TODO");
     }
 
     @Override
