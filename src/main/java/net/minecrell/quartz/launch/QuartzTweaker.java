@@ -24,7 +24,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package net.minecrell.quartz.launch;
 
 import net.minecraft.launchwrapper.ITweaker;
@@ -53,26 +52,39 @@ public final class QuartzTweaker implements ITweaker {
     public void injectIntoClassLoader(LaunchClassLoader loader) {
         logger.info("Initializing Quartz...");
 
+        // Would rather not load these through Launchwrapper as they use native dependencies
+        loader.addClassLoaderExclusion("com.sun.");
+        loader.addClassLoaderExclusion("oshi.");
         loader.addClassLoaderExclusion("io.netty.");
-        loader.addClassLoaderExclusion("gnu.trove.");
-        loader.addClassLoaderExclusion("joptsimple.");
-        loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
+
+        // Some libraries shouldn't get transformed, don't even give the chance for that
+        loader.addTransformerExclusion("joptsimple.");
+
+        // Minecraft Server libraries
+        loader.addTransformerExclusion("com.google.gson.");
+        loader.addTransformerExclusion("org.apache.commons.codec.");
+        loader.addTransformerExclusion("org.apache.commons.io.");
+        loader.addTransformerExclusion("org.apache.commons.lang3.");
+
+        // SpongeAPI
+        loader.addTransformerExclusion("com.flowpowered.math.");
+        loader.addTransformerExclusion("org.slf4j.");
+
+        // Guice
+        loader.addTransformerExclusion("com.google.inject.");
+        loader.addTransformerExclusion("org.aopalliance.");
+
+        // configurate
+        loader.addTransformerExclusion("ninja.leaping.configurate.");
+        loader.addTransformerExclusion("com.googlecode.concurrentlinkedhashmap.");
+        loader.addTransformerExclusion("com.typesafe.config.");
+
+        // Mixins
         loader.addClassLoaderExclusion("org.spongepowered.tools.");
         loader.addClassLoaderExclusion("net.minecrell.quartz.mixin.");
 
-        // Check if we're running in deobfuscated environment already
-        logger.info("Enabling runtime deobfuscation...");
-        if (isObfuscated()) {
-            Launch.blackboard.put("quartz.deobf-srg", Paths.get("bin", "deobf.srg.gz"));
-            loader.registerTransformer("net.minecrell.quartz.launch.transformers.DeobfuscationTransformer");
-            logger.info("Runtime deobfuscation is enabled.");
-        } else {
-            logger.info("Runtime deobfuscation is disabled - Quartz was loaded in a deobfuscated environment.");
-        }
-
-        logger.info("Enabling access transformer...");
-        Launch.blackboard.put("quartz.at", "quartz_at.cfg");
-        loader.registerTransformer("net.minecrell.quartz.launch.transformers.AccessTransformer");
+        // The server GUI won't work if we don't exclude this: log4j2 wants to have this in the same classloader
+        loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
         logger.info("Initializing Mixin environment...");
         MixinBootstrap.init();
@@ -82,14 +94,6 @@ public final class QuartzTweaker implements ITweaker {
         loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
 
         logger.info("Done! Starting Minecraft server...");
-    }
-
-    private static boolean isObfuscated() {
-        try {
-            return Launch.classLoader.getClassBytes("net.minecraft.world.World") == null;
-        } catch (IOException ignored) {
-            return true;
-        }
     }
 
     @Override

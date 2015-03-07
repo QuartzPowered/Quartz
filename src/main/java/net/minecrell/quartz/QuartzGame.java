@@ -53,8 +53,6 @@ public class QuartzGame implements Game {
     private static final String IMPLEMENTATION_VERSION =
             MoreObjects.firstNonNull(QuartzGame.class.getPackage().getImplementationVersion(), "UNKNOWN");
 
-    private static final MinecraftVersion MINECRAFT_VERSION = new QuartzMinecraftVersion("1.8", 47);
-
     private final QuartzPluginManager pluginManager;
     private final QuartzEventManager eventManager;
     private final GameRegistry gameRegistry;
@@ -75,7 +73,7 @@ public class QuartzGame implements Game {
 
     @Override
     public Optional<Server> getServer() {
-        return Optional.fromNullable((Server) MinecraftServer.getServer());
+        return Optional.fromNullable((Server) MinecraftServer.getInstance());
     }
 
     @Override
@@ -125,7 +123,7 @@ public class QuartzGame implements Game {
 
     @Override
     public MinecraftVersion getMinecraftVersion() {
-        return MINECRAFT_VERSION;
+        throw new NotImplementedException("TODO");
     }
 
 }

@@ -25,12 +25,16 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz;
+package net.minecraft.server;
 
-import org.spongepowered.api.MinecraftVersion;
+import net.minecrell.quartz.launch.mappings.Mapping;
 
-public interface ProtocolMinecraftVersion extends MinecraftVersion {
+@Mapping("net/minecraft/server/MinecraftServer")
+public abstract class MinecraftServer {
 
-    int getProtocol();
+    @Mapping("M")
+    public static MinecraftServer getInstance() {
+        throw new AssertionError();
+    }
 
 }

@@ -25,41 +25,18 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.mixin.status;
+package net.minecrell.quartz.launch.mappings;
 
-import net.minecraft.network.ServerStatusResponse;
-import net.minecrell.quartz.ProtocolMinecraftVersion;
-import net.minecrell.quartz.QuartzMinecraftVersion;
-import org.spongepowered.api.MinecraftVersion;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Mixin(ServerStatusResponse.MinecraftProtocolVersionIdentifier.class)
-public abstract class MixinMinecraftProtocolVersionIdentifier implements ProtocolMinecraftVersion {
-
-    @Shadow
-    private String name;
-    @Shadow
-    private int protocol;
-
-    @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public int getProtocol() {
-        return this.protocol;
-    }
-
-    @Override
-    public boolean isLegacy() {
-        return false;
-    }
-
-    @Override
-    public int compareTo(MinecraftVersion o) {
-        return QuartzMinecraftVersion.compare(this, o);
-    }
-
+@Retention(RetentionPolicy.CLASS)
+@Target({
+        ElementType.TYPE,
+        ElementType.METHOD,
+        ElementType.FIELD
+})
+public @interface Accessible {
 }
