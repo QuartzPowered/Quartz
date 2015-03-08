@@ -25,10 +25,3 @@ the [MIT License (MIT)](https://github.com/SpongePowered/SpongeAPI/blob/bea26022
     > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     > THE SOFTWARE.
     > ```
-
-- The ASM transformers in the package `net.minecrell.quartz.launch.transformers` are based on parts of the
-[Forge Mod Loader](https://github.com/MinecraftForge/FML) licensed under the
-[GNU Lesser General Public License v2.1](http://www.gnu.org/licenses/lgpl-2.1.html), but can be redistributed under [any alternative open source 
-license as classified by the OSI](http://opensource.org/licenses):
-  - [Original license text](https://github.com/MinecraftForge/FML/blob/1112c455b9758c38eab385f48578bad17c0180f9/LICENSE-fml.txt#L24-L34)
-  - [Original sources](https://github.com/MinecraftForge/FML/tree/1112c455b9758c38eab385f48578bad17c0180f9/src/main/java/cpw/mods/fml/common/asm/transformers)
