@@ -25,16 +25,12 @@
  * THE SOFTWARE.
  */
 
-package net.minecraft.server;
+package net.minecrell.quartz.mixin;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecraft.server.MinecraftServer;
+import org.spongepowered.asm.mixin.Mixin;
 
-import java.io.IOException;
-
-@Mapping("net/minecraft/server/MinecraftServer") // TODO: Rename this to MinecraftServer somehow
-public abstract class MinecraftServer2 {
-
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
+@Mixin(MinecraftServer.class)
+public class MixinMinecraftServer {
 
 }

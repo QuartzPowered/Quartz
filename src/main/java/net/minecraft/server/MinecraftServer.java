@@ -1,4 +1,4 @@
-/*
+package net.minecraft.server;/*
  * Quartz
  * Copyright (c) 2015, Minecrell <https://github.com/Minecrell>
  *
@@ -25,11 +25,13 @@
  * THE SOFTWARE.
  */
 
-package net.minecraft.server;
-
 import net.minecrell.quartz.launch.mappings.Mapping;
 
-@Mapping("kp")
-public abstract class DedicatedServer extends MinecraftServer {
+import java.io.IOException;
+
+public abstract class MinecraftServer {
+
+    @Mapping("i")
+    protected abstract boolean startServer() throws IOException;
 
 }

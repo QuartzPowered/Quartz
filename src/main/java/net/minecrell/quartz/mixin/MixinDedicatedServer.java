@@ -28,7 +28,7 @@
 package net.minecrell.quartz.mixin;
 
 import net.minecraft.server.DedicatedServer;
-import net.minecraft.server.MinecraftServer2;
+import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -36,11 +36,11 @@ import org.spongepowered.asm.mixin.Overwrite;
 import java.io.IOException;
 
 @Mixin(DedicatedServer.class)
-public abstract class MixinDedicatedServer extends MinecraftServer2 {
+public abstract class MixinDedicatedServer extends MinecraftServer {
 
-    @Override @Overwrite
-    protected boolean startServer() throws IOException {
-        LogManager.getLogger().info("OHAI");
+    @Overwrite
+    public boolean i() throws IOException {
+        LogManager.getLogger().info("LEL");
         return false;
     }
 

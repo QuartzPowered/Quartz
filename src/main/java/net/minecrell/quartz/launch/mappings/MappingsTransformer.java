@@ -29,8 +29,14 @@ package net.minecrell.quartz.launch.mappings;
 
 import net.minecraft.launchwrapper.IClassNameTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecrell.quartz.launch.QuartzTweaker;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.commons.RemappingClassAdapter;
+import org.objectweb.asm.tree.ClassNode;
 
-public class MappingsTransformer implements IClassTransformer, IClassNameTransformer {
+public class MappingsTransformer extends Remapper implements IClassTransformer, IClassNameTransformer {
 
     private final Mappings mappings;
 
@@ -44,18 +50,75 @@ public class MappingsTransformer implements IClassTransformer, IClassNameTransfo
     }
 
     @Override
-    public String unmapClassName(String name) {
-        return name;
+    public String map(String typeName) {
+        String name = mappings.classes.get(typeName);
+        if (name != null) {
+            return name;
+        }
+
+        int innerClassPos = typeName.lastIndexOf('$');
+        if (innerClassPos >= 0) {
+            name = mappings.classes.get(typeName.substring(0, innerClassPos));
+            if (name != null) {
+                return name + typeName.substring(innerClassPos);
+            }
+        }
+
+        return typeName;
+    }
+
+    public String unmap(String typeName) {
+        String name = mappings.classes.inverse().get(typeName);
+        if (name != null) {
+            return name;
+        }
+
+        int innerClassPos = typeName.lastIndexOf('$');
+        if (innerClassPos >= 0) {
+            name = mappings.classes.inverse().get(typeName.substring(0, innerClassPos));
+            if (name != null) {
+                return name + typeName.substring(innerClassPos);
+            }
+        }
+
+        return typeName;
     }
 
     @Override
     public String remapClassName(String name) {
-        return name;
+        return map(name.replace('.', '/')).replace('/', '.');
     }
 
     @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        return basicClass;
+    public String unmapClassName(String name) {
+        return unmap(name.replace('.', '/')).replace('/', '.');
+    }
+
+    @Override
+    public byte[] transform(String name, String transformedName, byte[] bytes) {
+        // Special case for main class as our mapping class would overwrite it otherwise
+        /*if (name.equals(QuartzTweaker.MAIN)) {
+            bytes = QuartzTweaker.mainClass;
+        } else if (bytes == null || (name.indexOf('.') != -1 && !name.startsWith(Mappings.PACKAGE))) {
+            return bytes;
+        }*/
+
+        if (bytes == null) {
+            return null;
+        }
+        if (name.equals(QuartzTweaker.MAIN)) {
+            bytes = QuartzTweaker.mainClass;
+        }
+
+        ClassWriter writer = new ClassWriter(0);
+        ClassReader reader = new ClassReader(bytes);
+        reader.accept(new RemappingClassAdapter(writer, this), ClassReader.EXPAND_FRAMES);
+
+        reader = new ClassReader(writer.toByteArray());
+        ClassNode classNode = new ClassNode();
+        reader.accept(classNode, 0);
+
+        return writer.toByteArray();
     }
 
 }

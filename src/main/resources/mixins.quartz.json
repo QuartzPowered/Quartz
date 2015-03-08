@@ -2,6 +2,7 @@
     "package": "net.minecrell.quartz.mixin",
     "refmap": "mixins.quartz.refmap.json",
     "server": [
+        "MixinMinecraftServer",
         "MixinDedicatedServer"
     ]
 }

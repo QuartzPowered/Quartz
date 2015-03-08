@@ -27,6 +27,7 @@
 package net.minecrell.quartz.launch;
 
 import com.google.common.base.Throwables;
+import com.google.common.io.ByteStreams;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecrell.quartz.launch.mappings.Mappings;
@@ -37,13 +38,19 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.zip.ZipFile;
 
 public final class QuartzTweaker implements ITweaker {
 
+    public static final String MAIN = "net.minecraft.server.MinecraftServer";
+    public static final String MAIN_PATH = "net/minecraft/server/MinecraftServer";
+
     private static final Logger logger = LogManager.getLogger();
+    public static byte[] mainClass;
 
     private Path gameDir;
 
@@ -60,7 +67,9 @@ public final class QuartzTweaker implements ITweaker {
             logger.info("Initializing Quartz...");
 
             // Load Minecraft Server
-            loader.addURL(gameDir.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL).toUri().toURL());
+            Path serverJar = gameDir.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL);
+            mainClass = loadFromZip(serverJar, MAIN_PATH + ".class");
+            loader.addURL(serverJar.toUri().toURL());
 
             // Would rather not load these through Launchwrapper as they use native dependencies
             loader.addClassLoaderExclusion("com.sun.");
@@ -112,9 +121,17 @@ public final class QuartzTweaker implements ITweaker {
         }
     }
 
+    private static byte[] loadFromZip(Path path, String entry) throws IOException {
+        try (ZipFile zip = new ZipFile(path.toFile())) {
+            try (InputStream in = zip.getInputStream(zip.getEntry(entry))) {
+                return ByteStreams.toByteArray(in);
+            }
+        }
+    }
+
     @Override
     public String getLaunchTarget() {
-        return "net.minecraft.server.MinecraftServer";
+        return MAIN;
     }
 
     @Override
