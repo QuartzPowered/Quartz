@@ -34,7 +34,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
-import org.objectweb.asm.tree.ClassNode;
 
 public class MappingsTransformer extends Remapper implements IClassTransformer, IClassNameTransformer {
 
@@ -96,25 +95,17 @@ public class MappingsTransformer extends Remapper implements IClassTransformer, 
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {
-        // Special case for main class as our mapping class would overwrite it otherwise
-        /*if (name.equals(QuartzTweaker.MAIN)) {
-            bytes = QuartzTweaker.mainClass;
-        } else if (bytes == null || (name.indexOf('.') != -1 && !name.startsWith(Mappings.PACKAGE))) {
-            return bytes;
-        }*/
-
         if (bytes == null) {
             return null;
+        }
+
+        if (!transformedName.startsWith(Mappings.PACKAGE_CLASS)) {
+            return bytes;
         }
 
         ClassWriter writer = new ClassWriter(0);
         ClassReader reader = new ClassReader(bytes);
         reader.accept(new RemappingClassAdapter(writer, this), ClassReader.EXPAND_FRAMES);
-
-        reader = new ClassReader(writer.toByteArray());
-        ClassNode classNode = new ClassNode();
-        reader.accept(classNode, 0);
-
         return writer.toByteArray();
     }
 

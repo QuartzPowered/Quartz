@@ -61,6 +61,7 @@ public class Mappings {
     private static final String ACCESSIBLE_DESCRIPTOR = Type.getDescriptor(Accessible.class);
 
     public static final String PACKAGE = "net/minecraft/server";
+    public static final String PACKAGE_CLASS = "net.minecraft.server.";
     private static final String PACKAGE_PREFIX = PACKAGE + '/';
     private static final String MAPPINGS_DIR = "mappings/";
 
@@ -160,9 +161,13 @@ public class Mappings {
         if (classNode.invisibleAnnotations != null) {
             for (AnnotationNode annotation : classNode.invisibleAnnotations) {
                 if (annotation.desc.equals(MAPPING_DESCRIPTOR)) {
-                    Iterator<Object> values = annotation.values.iterator();
-                    checkState(values.next().equals("value"), "Invalid annotation tag in %s", classNode.name);
-                    return (String) values.next();
+                    if (annotation.values != null) {
+                        Iterator<Object> values = annotation.values.iterator();
+                        checkState(values.next().equals("value"), "Invalid annotation tag in %s", classNode.name);
+                        return (String) values.next();
+                    } else {
+                        return "";
+                    }
                 }
             }
         }
