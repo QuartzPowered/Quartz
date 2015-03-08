@@ -99,7 +99,7 @@ public class MappingsTransformer extends Remapper implements IClassTransformer, 
             return null;
         }
 
-        if (!transformedName.startsWith(Mappings.PACKAGE_CLASS)) {
+        if (!transformedName.startsWith(Mappings.PACKAGE_CLASS) && transformedName.indexOf('.') >= 0) {
             return bytes;
         }
 
