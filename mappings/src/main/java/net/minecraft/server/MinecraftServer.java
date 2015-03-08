@@ -30,7 +30,7 @@ import net.minecrell.quartz.launch.mappings.Mapping;
 
 import java.io.IOException;
 
-@Mapping("")
+@Mapping
 public abstract class MinecraftServer {
 
     @Mapping("i")

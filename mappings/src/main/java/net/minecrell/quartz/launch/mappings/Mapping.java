@@ -40,6 +40,6 @@ import java.lang.annotation.Target;
 })
 public @interface Mapping {
 
-    String value();
+    String value() default "";
 
 }
