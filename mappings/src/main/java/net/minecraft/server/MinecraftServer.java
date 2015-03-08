@@ -24,56 +24,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package net.minecraft.server;
 
-package net.minecrell.quartz.guice;
+import net.minecrell.quartz.launch.mappings.Mapping;
 
-import com.google.common.base.Objects;
-import org.spongepowered.api.service.config.ConfigDir;
+import java.io.IOException;
 
-import java.lang.annotation.Annotation;
+@Mapping("")
+public abstract class MinecraftServer {
 
-// This is strange, but required for Guice and annotations with values.
-class ConfigDirAnnotation implements ConfigDir {
-
-    private final boolean shared;
-
-    ConfigDirAnnotation(boolean shared) {
-        this.shared = shared;
-    }
-
-    @Override
-    public boolean sharedRoot() {
-        return shared;
-    }
-
-    @Override
-    public Class<? extends Annotation> annotationType() {
-        return ConfigDir.class;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof ConfigDir)) {
-            return false;
-        }
-
-        ConfigDir that = (ConfigDir) o;
-        return sharedRoot() == that.sharedRoot();
-    }
-
-    @Override
-    public int hashCode() {
-        return (127 * "sharedRoot".hashCode()) ^ Boolean.valueOf(sharedRoot()).hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return Objects.toStringHelper('@' + getClass().getName())
-                .add("shared", shared)
-                .toString();
-    }
+    @Mapping("i")
+    protected abstract boolean startServer() throws IOException;
 
 }

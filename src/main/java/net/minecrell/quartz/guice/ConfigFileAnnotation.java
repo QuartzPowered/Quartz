@@ -27,7 +27,7 @@
 
 package net.minecrell.quartz.guice;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import org.spongepowered.api.service.config.DefaultConfig;
 
 import java.lang.annotation.Annotation;
@@ -70,7 +70,7 @@ class ConfigFileAnnotation implements DefaultConfig {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper('@' + getClass().getName())
+        return Objects.toStringHelper('@' + getClass().getName())
                 .add("shared", shared)
                 .toString();
     }

@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'eclipse'
+    id 'idea'
     id 'application'
 
     id 'com.github.hierynomus.license' version '0.11.0'
@@ -29,10 +31,33 @@ version = '0.1-SNAPSHOT'
 
 mainClassName = 'net.minecrell.quartz.launch.QuartzMain'
 
-apply from: file('minecraft.gradle')
+configurations {
+    minecraft
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.minecraft
+    }
+}
+
+idea {
+    module {
+        scopes.COMPILE.plus += [configurations.minecraft]
+    }
+}
 
 dependencies {
-    compile project('SpongeAPI')
+    minecraft project(':mappings')
+    compile(project(':mappings')) {
+        transitive = false
+    }
+
+    compile(project(':SpongeAPI')) {
+        exclude module: 'guava'
+        exclude module: 'jsr305'
+        exclude module: 'asm'
+    }
 
     compile 'org.ow2.asm:asm-debug-all:5.0.3'
     runtime 'org.ow2.asm:asm-all:5.0.3'
@@ -42,15 +67,15 @@ dependencies {
     }
 
     compile 'net.sf.jopt-simple:jopt-simple:4.6'
-    compile('net.minecraft:launchwrapper:1.11') {
+    minecraft('net.minecraft:launchwrapper:1.11') {
         transitive = false
     }
 
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.0-beta9'
 }
 
-compileJava {
-    options.compilerArgs += ['-Xlint:all', '-Xlint:-deprecation']
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-deprecation', '-proc:none']
     options.encoding = 'UTF-8'
 }
 
@@ -63,43 +88,34 @@ jar {
                 'Implementation-Name': name,
                 'Implementation-Version': version,
                 'Implementation-Vendor': 'Minecrell',
-                'Class-Path': 'bin/minecraft_server.1.8.3.jar bin/launchwrapper-1.11.jar'
+                'Class-Path': 'bin/launchwrapper-1.11.jar bin/minecraft_server.1.8.3.jar'
         )
+    }
+}
+
+def getClassFiles(project) {
+    new File(new File(project.buildDir, 'classes'), 'main')
+}
+
+shadowJar.doFirst {
+    copy {
+        from getClassFiles(project(':mappings'))
+        include 'net/minecraft/**'
+        into new File(new File(temporaryDir, 'mappings'), 'mappings')
     }
 }
 
 shadowJar {
     classifier = ''
-    exclude 'GradleStart**'
-    exclude 'net/minecraftforge/**'
+    exclude 'net/minecraft/**'
 
-    dependencies {
-        include dependency('org.spongepowered:mixin')
-        include dependency('net.sf.jopt-simple:jopt-simple')
-        include dependency('org.ow2.asm:asm-all')
-
-        // SpongeAPI
-        include project('SpongeAPI')
-
-        include dependency('org.slf4j:slf4j-api')
-        include dependency('org.apache.logging.log4j:log4j-slf4j-impl')
-
-        include dependency('com.google.inject:guice')
-        include dependency('aopalliance:aopalliance:1.0')
-        include dependency('javax.inject:javax.inject')
-
-        include dependency('com.typesafe:config')
-        include dependency('ninja.leaping.configurate:configurate-core')
-        include dependency('ninja.leaping.configurate:configurate-hocon')
-
-        include dependency('com.flowpowered:flow-math')
-    }
+    from new File(temporaryDir, 'mappings')
 }
 build.dependsOn(shadowJar)
 
 // License header formatting
 license {
-    header file('LICENSE')
+    header rootProject.file('LICENSE')
     exclude '*.txt'
     exclude '*.xml'
     exclude '*.json'
@@ -111,13 +127,12 @@ license {
     }
 }
 
-
 configure([distZip, distTar]) {
     enabled = false
 }
 
 // Disable checkstyle and Javadocs for SpongeAPI
-project('SpongeAPI') {
+project(':SpongeAPI') {
     afterEvaluate {
         configure([javadoc, javadocJar, sourceJar, licenseFormat]) {
             enabled = false

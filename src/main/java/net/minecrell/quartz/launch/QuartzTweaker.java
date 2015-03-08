@@ -26,8 +26,9 @@
  */
 package net.minecrell.quartz.launch;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.common.base.Throwables;
-import com.google.common.io.ByteStreams;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecrell.quartz.launch.mappings.Mappings;
@@ -38,37 +39,50 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
-import java.util.zip.ZipFile;
 
 public final class QuartzTweaker implements ITweaker {
 
     public static final String MAIN = "net.minecraft.server.MinecraftServer";
     public static final String MAIN_PATH = "net/minecraft/server/MinecraftServer";
+    public static final String MAIN_CLASS = MAIN_PATH + ".class";
 
     private static final Logger logger = LogManager.getLogger();
-    public static byte[] mainClass;
 
-    private Path gameDir;
+    private static Path serverJar;
+
+    public static Path getServerJar() {
+        return serverJar;
+    }
 
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
-        this.gameDir = gameDir != null ? gameDir.toPath() : Paths.get("");
-        QuartzLaunch.initialize(this.gameDir);
+        Path gamePath = gameDir != null ? gameDir.toPath() : Paths.get("");
+        QuartzLaunch.initialize(gamePath);
+        serverJar = gamePath.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL);
+        checkState(Files.exists(serverJar), "Failed to load server JAR");
     }
 
     @Override
     public void injectIntoClassLoader(LaunchClassLoader loader) {
-
         try {
             logger.info("Initializing Quartz...");
 
+            byte[] mainClass = loader.getClassBytes(MAIN);
+
+            // Check if we're running in development environment
+            if (mainClass != null && Mappings.isMappingsClass(mainClass)) {
+                // We need to replace the main class because it clashes with our mapping
+                loader.registerTransformer("net.minecrell.quartz.launch.transformers.MainClassTransformer");
+            } else {
+                loader.clearNegativeEntries(Collections.singleton(MAIN_CLASS));
+            }
+
             // Load Minecraft Server
-            Path serverJar = gameDir.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL);
-            mainClass = loadFromZip(serverJar, MAIN_PATH + ".class");
             loader.addURL(serverJar.toUri().toURL());
 
             // Would rather not load these through Launchwrapper as they use native dependencies
@@ -100,13 +114,14 @@ public final class QuartzTweaker implements ITweaker {
 
             // Mixins
             loader.addClassLoaderExclusion("org.spongepowered.tools.");
-            loader.addClassLoaderExclusion("net.minecrell.quartz.mixin.");
+            loader.addTransformerExclusion("net.minecrell.quartz.mixin.");
 
             // The server GUI won't work if we don't exclude this: log4j2 wants to have this in the same classloader
             loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
             logger.info("Initializing Mappings...");
-            Mappings.initialize(loader);
+            Mappings.initialize();
+            loader.registerTransformer("net.minecrell.quartz.launch.transformers.MappingsTransformer");
 
             logger.info("Initializing Mixin environment...");
             MixinBootstrap.init();
@@ -118,14 +133,6 @@ public final class QuartzTweaker implements ITweaker {
             logger.info("Done! Starting Minecraft server...");
         } catch (IOException e) {
             throw Throwables.propagate(e);
-        }
-    }
-
-    private static byte[] loadFromZip(Path path, String entry) throws IOException {
-        try (ZipFile zip = new ZipFile(path.toFile())) {
-            try (InputStream in = zip.getInputStream(zip.getEntry(entry))) {
-                return ByteStreams.toByteArray(in);
-            }
         }
     }
 

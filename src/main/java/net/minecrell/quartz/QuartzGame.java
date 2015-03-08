@@ -27,7 +27,7 @@
 
 package net.minecrell.quartz;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import net.minecrell.quartz.event.QuartzEventManager;
 import net.minecrell.quartz.plugin.QuartzPluginManager;
@@ -48,9 +48,9 @@ import javax.inject.Singleton;
 @Singleton
 public class QuartzGame implements Game {
 
-    private static final String API_VERSION = MoreObjects.firstNonNull(QuartzGame.class.getPackage().getSpecificationVersion(), "UNKNOWN");
+    private static final String API_VERSION = Objects.firstNonNull(QuartzGame.class.getPackage().getSpecificationVersion(), "UNKNOWN");
     private static final String IMPLEMENTATION_VERSION =
-            MoreObjects.firstNonNull(QuartzGame.class.getPackage().getImplementationVersion(), "UNKNOWN");
+            Objects.firstNonNull(QuartzGame.class.getPackage().getImplementationVersion(), "UNKNOWN");
 
     private final QuartzPluginManager pluginManager;
     private final QuartzEventManager eventManager;

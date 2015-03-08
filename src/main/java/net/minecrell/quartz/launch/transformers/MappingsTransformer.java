@@ -25,11 +25,11 @@
  * THE SOFTWARE.
  */
 
-package net.minecrell.quartz.launch.mappings;
+package net.minecrell.quartz.launch.transformers;
 
 import net.minecraft.launchwrapper.IClassNameTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecrell.quartz.launch.QuartzTweaker;
+import net.minecrell.quartz.launch.mappings.Mappings;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.Remapper;
@@ -105,9 +105,6 @@ public class MappingsTransformer extends Remapper implements IClassTransformer, 
 
         if (bytes == null) {
             return null;
-        }
-        if (name.equals(QuartzTweaker.MAIN)) {
-            bytes = QuartzTweaker.mainClass;
         }
 
         ClassWriter writer = new ClassWriter(0);

@@ -30,8 +30,9 @@ package net.minecrell.quartz.launch.mappings;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableBiMap;
-import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -61,6 +62,7 @@ public class Mappings {
 
     public static final String PACKAGE = "net/minecraft/server";
     private static final String PACKAGE_PREFIX = PACKAGE + '/';
+    private static final String MAPPINGS_DIR = "mappings/";
 
     private static Mappings instance;
 
@@ -69,15 +71,14 @@ public class Mappings {
         return instance;
     }
 
-    public static void initialize(LaunchClassLoader loader) throws IOException {
+    public static void initialize() throws IOException {
         if (instance != null) {
             return;
         }
         instance = new Mappings();
-        loader.registerTransformer(Mappings.class.getPackage().getName() + ".MappingsTransformer");
     }
 
-    protected final ImmutableBiMap<String, String> classes;
+    public final ImmutableBiMap<String, String> classes;
     protected final ImmutableBiMap<String, String> methods;
     protected final ImmutableBiMap<String, String> fields;
 
@@ -99,7 +100,7 @@ public class Mappings {
             ImmutableBiMap.Builder<String, String> methods, ImmutableBiMap.Builder<String, String> fields) throws IOException {
         URI source;
         try {
-            source = requireNonNull(Mappings.class.getProtectionDomain().getCodeSource(), "Unable to find class source").getLocation().toURI();
+            source = requireNonNull(Mapping.class.getProtectionDomain().getCodeSource(), "Unable to find class source").getLocation().toURI();
         } catch (URISyntaxException e) {
             throw new IOException("Failed to find class source", e);
         }
@@ -133,7 +134,8 @@ public class Mappings {
                 Enumeration<? extends ZipEntry> entries = zip.entries();
                 while (entries.hasMoreElements()) {
                     ZipEntry entry = entries.nextElement();
-                    if (entry.isDirectory() || !entry.getName().endsWith(".class") || !entry.getName().startsWith(PACKAGE_PREFIX)) {
+                    String name = StringUtils.removeStart(entry.getName(), MAPPINGS_DIR);
+                    if (entry.isDirectory() || !name.endsWith(".class") || !name.startsWith(PACKAGE_PREFIX)) {
                         continue;
                     }
 
@@ -147,24 +149,42 @@ public class Mappings {
         }
 
         for (ClassNode classNode : mappingClasses.values()) {
-            if (classNode.invisibleAnnotations != null) {
-                for (AnnotationNode annotation : classNode.invisibleAnnotations) {
-                    if (annotation.desc.equals(MAPPING_DESCRIPTOR)) {
-                        Iterator<Object> values = annotation.values.iterator();
-                        checkState(values.next().equals("value"), "Invalid annotation tag in %s", classNode.name);
-                        classes.put((String) values.next(), classNode.name);
-                        break;
-                    }
-                }
+            String mapping = getClassMapping(classNode);
+            if (!Strings.isNullOrEmpty(mapping)) {
+                classes.put(mapping, classNode.name);
             }
         }
     }
 
-    private static ClassNode loadClassStructure(InputStream in) throws IOException {
-        ClassReader reader = new ClassReader(in);
+    private static String getClassMapping(ClassNode classNode) {
+        if (classNode.invisibleAnnotations != null) {
+            for (AnnotationNode annotation : classNode.invisibleAnnotations) {
+                if (annotation.desc.equals(MAPPING_DESCRIPTOR)) {
+                    Iterator<Object> values = annotation.values.iterator();
+                    checkState(values.next().equals("value"), "Invalid annotation tag in %s", classNode.name);
+                    return (String) values.next();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static ClassNode loadClassStructure(ClassReader reader) {
         ClassNode classNode = new ClassNode();
         reader.accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         return classNode;
     }
 
+    private static ClassNode loadClassStructure(byte[] bytes) {
+        return loadClassStructure(new ClassReader(bytes));
+    }
+
+    private static ClassNode loadClassStructure(InputStream in) throws IOException {
+        return loadClassStructure(new ClassReader(in));
+    }
+
+    public static boolean isMappingsClass(byte[] bytes) {
+        return getClassMapping(loadClassStructure(bytes)) != null;
+    }
 }
