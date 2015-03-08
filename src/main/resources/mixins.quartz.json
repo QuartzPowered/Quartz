@@ -1,4 +1,6 @@
 {
+    "required": true,
+    "minVersion": "0.2",
     "package": "net.minecrell.quartz.mixin",
     "refmap": "mixins.quartz.refmap.json",
     "server": [
