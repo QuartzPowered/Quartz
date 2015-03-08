@@ -32,6 +32,7 @@ import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecrell.quartz.launch.mappings.Mappings;
+import net.minecrell.quartz.launch.mappings.MappingsParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.launch.MixinBootstrap;
@@ -75,8 +76,9 @@ public final class QuartzTweaker implements ITweaker {
             byte[] mainClass = loader.getClassBytes(MAIN);
 
             // Check if we're running in development environment
-            if (mainClass != null && Mappings.isMappingsClass(mainClass)) {
+            if (mainClass != null && MappingsParser.isMappingsClass(mainClass)) {
                 // We need to replace the main class because it clashes with our mapping
+                logger.info("Enabling main class transformer...");
                 loader.registerTransformer("net.minecrell.quartz.launch.transformers.MainClassTransformer");
             } else {
                 loader.clearNegativeEntries(Collections.singleton(MAIN_CLASS));

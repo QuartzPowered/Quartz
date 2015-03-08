@@ -30,12 +30,9 @@ package net.minecrell.quartz.launch.mappings;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableBiMap;
+import net.minecrell.quartz.launch.util.ParsedAnnotation;
 import org.apache.commons.lang3.StringUtils;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.IOException;
@@ -50,15 +47,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class Mappings {
-
-    private static final String MAPPING_DESCRIPTOR = Type.getDescriptor(Mapping.class);
-    private static final String ACCESSIBLE_DESCRIPTOR = Type.getDescriptor(Accessible.class);
 
     public static final String PACKAGE = "net/minecraft/server";
     public static final String PACKAGE_CLASS = "net.minecraft.server.";
@@ -121,7 +114,7 @@ public class Mappings {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (file.getFileName().toString().endsWith(".class")) {
                         try (InputStream in = Files.newInputStream(file)) {
-                            ClassNode classNode = loadClassStructure(in);
+                            ClassNode classNode = MappingsParser.loadClassStructure(in);
                             mappingClasses.put(classNode.name, classNode);
                         }
                     }
@@ -142,7 +135,7 @@ public class Mappings {
 
                     // Ok, we found something
                     try (InputStream in = zip.getInputStream(entry)) {
-                        ClassNode classNode = loadClassStructure(in);
+                        ClassNode classNode = MappingsParser.loadClassStructure(in);
                         mappingClasses.put(classNode.name, classNode);
                     }
                 }
@@ -150,46 +143,13 @@ public class Mappings {
         }
 
         for (ClassNode classNode : mappingClasses.values()) {
-            String mapping = getClassMapping(classNode);
-            if (!Strings.isNullOrEmpty(mapping)) {
+            ParsedAnnotation mappingAnnotation = MappingsParser.getClassMapping(classNode);
+            checkState(mappingAnnotation != null, "Class %s is missing the @Mapping annotation", classNode.name);
+            String mapping = mappingAnnotation.getString("value", "");
+            if (!mapping.isEmpty()) {
                 classes.put(mapping, classNode.name);
             }
         }
     }
 
-    private static String getClassMapping(ClassNode classNode) {
-        if (classNode.invisibleAnnotations != null) {
-            for (AnnotationNode annotation : classNode.invisibleAnnotations) {
-                if (annotation.desc.equals(MAPPING_DESCRIPTOR)) {
-                    if (annotation.values != null) {
-                        Iterator<Object> values = annotation.values.iterator();
-                        checkState(values.next().equals("value"), "Invalid annotation tag in %s", classNode.name);
-                        return (String) values.next();
-                    } else {
-                        return "";
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static ClassNode loadClassStructure(ClassReader reader) {
-        ClassNode classNode = new ClassNode();
-        reader.accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-        return classNode;
-    }
-
-    private static ClassNode loadClassStructure(byte[] bytes) {
-        return loadClassStructure(new ClassReader(bytes));
-    }
-
-    private static ClassNode loadClassStructure(InputStream in) throws IOException {
-        return loadClassStructure(new ClassReader(in));
-    }
-
-    public static boolean isMappingsClass(byte[] bytes) {
-        return getClassMapping(loadClassStructure(bytes)) != null;
-    }
 }

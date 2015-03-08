@@ -31,17 +31,16 @@ import net.minecraft.server.DedicatedServer;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-
-import java.io.IOException;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DedicatedServer.class)
 public abstract class MixinDedicatedServer extends MinecraftServer {
 
-    @Overwrite
-    public boolean i() throws IOException {
+    @Inject(method = "i", at = @At("HEAD"))
+    public void onStartServer(CallbackInfoReturnable<Boolean> ci) {
         LogManager.getLogger().info("LEL");
-        return false;
     }
 
 }

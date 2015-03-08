@@ -42,4 +42,6 @@ public @interface Mapping {
 
     String value() default "";
 
+    boolean mixin() default false;
+
 }
