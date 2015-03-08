@@ -31,9 +31,13 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableTable;
 import net.minecrell.quartz.launch.util.ParsedAnnotation;
 import org.apache.commons.lang3.StringUtils;
+import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,53 +49,26 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class Mappings {
+public class MappingsLoader {
 
     public static final String PACKAGE = "net/minecraft/server";
     public static final String PACKAGE_CLASS = "net.minecraft.server.";
     private static final String PACKAGE_PREFIX = PACKAGE + '/';
     private static final String MAPPINGS_DIR = "mappings/";
 
-    private static Mappings instance;
+    private final List<ClassNode> mappingClasses;
 
-    public static Mappings getInstance() {
-        checkState(instance != null, "Not initialized yet");
-        return instance;
+    protected MappingsLoader(List<ClassNode> mappingClasses) {
+        this.mappingClasses = mappingClasses;
     }
 
-    public static void initialize() throws IOException {
-        if (instance != null) {
-            return;
-        }
-        instance = new Mappings();
-    }
-
-    public final ImmutableBiMap<String, String> classes;
-    protected final ImmutableBiMap<String, String> methods;
-    protected final ImmutableBiMap<String, String> fields;
-
-    public Mappings() throws IOException {
-        ImmutableBiMap.Builder<String, String> classes = ImmutableBiMap.builder();
-        ImmutableBiMap.Builder<String, String> methods = ImmutableBiMap.builder();
-        ImmutableBiMap.Builder<String, String> fields = ImmutableBiMap.builder();
-
-        loadMappings(classes, methods, fields);
-
-        this.classes = classes.build();
-        this.methods = methods.build();
-        this.fields = fields.build();
-
-        System.out.println(this.classes);
-    }
-
-    private static void loadMappings(ImmutableBiMap.Builder<String, String> classes,
-            ImmutableBiMap.Builder<String, String> methods, ImmutableBiMap.Builder<String, String> fields) throws IOException {
+    public static MappingsLoader load() throws IOException {
         URI source;
         try {
             source = requireNonNull(Mapping.class.getProtectionDomain().getCodeSource(), "Unable to find class source").getLocation().toURI();
@@ -102,7 +79,7 @@ public class Mappings {
         Path location = Paths.get(source);
         System.out.println(location);
 
-        Map<String, ClassNode> mappingClasses = new HashMap<>();
+        List<ClassNode> mappingClasses = new ArrayList<>();
 
         // Load the classes from the source
         if (Files.isDirectory(location)) {
@@ -115,7 +92,7 @@ public class Mappings {
                     if (file.getFileName().toString().endsWith(".class")) {
                         try (InputStream in = Files.newInputStream(file)) {
                             ClassNode classNode = MappingsParser.loadClassStructure(in);
-                            mappingClasses.put(classNode.name, classNode);
+                            mappingClasses.add(classNode);
                         }
                     }
 
@@ -136,13 +113,19 @@ public class Mappings {
                     // Ok, we found something
                     try (InputStream in = zip.getInputStream(entry)) {
                         ClassNode classNode = MappingsParser.loadClassStructure(in);
-                        mappingClasses.put(classNode.name, classNode);
+                        mappingClasses.add(classNode);
                     }
                 }
             }
         }
 
-        for (ClassNode classNode : mappingClasses.values()) {
+        return new MappingsLoader(mappingClasses);
+    }
+
+    public ImmutableBiMap<String, String> loadClasses() {
+        ImmutableBiMap.Builder<String, String> classes = ImmutableBiMap.builder();
+
+        for (ClassNode classNode : mappingClasses) {
             ParsedAnnotation mappingAnnotation = MappingsParser.getClassMapping(classNode);
             checkState(mappingAnnotation != null, "Class %s is missing the @Mapping annotation", classNode.name);
             String mapping = mappingAnnotation.getString("value", "");
@@ -150,6 +133,45 @@ public class Mappings {
                 classes.put(mapping, classNode.name);
             }
         }
+
+        return classes.build();
+    }
+
+    public ImmutableTable<String, String, String> loadFields(Remapper remapper) {
+        ImmutableTable.Builder<String, String, String> fields = ImmutableTable.builder();
+
+        for (ClassNode classNode : mappingClasses) {
+            for (FieldNode fieldNode : classNode.fields) {
+                ParsedAnnotation mappingAnnotation = MappingsParser.getFieldMapping(fieldNode);
+                //checkState(mappingAnnotation != null, "Field %s in %s is missing the @Mapping annotation", fieldNode.name, classNode.name);
+                if (mappingAnnotation == null) continue; // TODO
+                String mapping = mappingAnnotation.getString("value", "");
+                if (!mapping.isEmpty()) {
+                    fields.put(classNode.name, mapping + ':' + remapper.mapDesc(fieldNode.desc), fieldNode.name);
+                }
+            }
+        }
+
+        return fields.build();
+    }
+
+    public ImmutableTable<String, String, String> loadMethods(Remapper remapper) {
+        ImmutableTable.Builder<String, String, String> methods = ImmutableTable.builder();
+
+        for (ClassNode classNode : mappingClasses) {
+            for (MethodNode methodNode : classNode.methods) {
+                if (methodNode.name.charAt(0) == '<') continue;
+                ParsedAnnotation mappingAnnotation = MappingsParser.getMethodMapping(methodNode);
+                //checkState(mappingAnnotation != null, "Method %s in %s is missing the @Mapping annotation", methodNode.name, classNode.name);
+                if (mappingAnnotation == null) continue; // TODO
+                String mapping = mappingAnnotation.getString("value", "");
+                if (!mapping.isEmpty()) {
+                    methods.put(classNode.name, mapping + remapper.mapDesc(methodNode.desc), methodNode.name);
+                }
+            }
+        }
+
+        return methods.build();
     }
 
 }

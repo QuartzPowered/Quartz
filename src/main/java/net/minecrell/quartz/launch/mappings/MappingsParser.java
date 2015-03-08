@@ -1,3 +1,29 @@
+/*
+ * Quartz
+ * Copyright (c) 2015, Minecrell <https://github.com/Minecrell>
+ *
+ * Based on Sponge and SpongeAPI, licensed under the MIT License (MIT).
+ * Copyright (c) SpongePowered.org <http://www.spongepowered.org>
+ * Copyright (c) contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package net.minecrell.quartz.launch.mappings;
 
 import com.google.common.collect.ImmutableMap;
@@ -6,6 +32,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +75,7 @@ public final class MappingsParser {
         return builder.build();
     }
 
-    public static ParsedAnnotation getMapping(List<AnnotationNode> annotationNodes) {
+    private static ParsedAnnotation getMapping(List<AnnotationNode> annotationNodes) {
         return parseAnnotation(annotationNodes, MAPPING);
     }
 
@@ -55,21 +83,29 @@ public final class MappingsParser {
         return getMapping(classNode.invisibleAnnotations);
     }
 
+    public static ParsedAnnotation getMethodMapping(MethodNode methodNode) {
+        return getMapping(methodNode.invisibleAnnotations);
+    }
+
+    public static ParsedAnnotation getFieldMapping(FieldNode fieldNode) {
+        return getMapping(fieldNode.invisibleAnnotations);
+    }
+
     public static boolean isMappingsClass(byte[] bytes) {
         return getClassMapping(loadClassStructure(bytes)) != null;
     }
 
-    static ClassNode loadClassStructure(ClassReader reader) {
+    public static ClassNode loadClassStructure(ClassReader reader) {
         ClassNode classNode = new ClassNode();
         reader.accept(classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         return classNode;
     }
 
-    static ClassNode loadClassStructure(byte[] bytes) {
+    public static ClassNode loadClassStructure(byte[] bytes) {
         return loadClassStructure(new ClassReader(bytes));
     }
 
-    static ClassNode loadClassStructure(InputStream in) throws IOException {
+    public static ClassNode loadClassStructure(InputStream in) throws IOException {
         return loadClassStructure(new ClassReader(in));
     }
 

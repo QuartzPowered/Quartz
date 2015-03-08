@@ -24,22 +24,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package net.minecraft.server;
 
-package net.minecrell.quartz.launch.mappings;
+import net.minecrell.quartz.launch.mappings.Mapping;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+@Mapping("a")
+public enum ChatFormatting {
 
-@Retention(RetentionPolicy.CLASS)
-@Target({
-        ElementType.TYPE,
-        ElementType.METHOD,
-        ElementType.FIELD
-})
-public @interface Mapping {
+    @Mapping("a")
+    BLACK,
+    @Mapping("m")
+    RED
 
-    String value() default "";
 
 }

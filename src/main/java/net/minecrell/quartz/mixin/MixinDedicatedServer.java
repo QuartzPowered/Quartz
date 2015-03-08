@@ -38,7 +38,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(DedicatedServer.class)
 public abstract class MixinDedicatedServer extends MinecraftServer {
 
-    @Inject(method = "i", at = @At("HEAD"))
+    @Inject(method = "startServer", at = @At("HEAD"))
     public void onStartServer(CallbackInfoReturnable<Boolean> ci) {
         LogManager.getLogger().info("LEL");
     }

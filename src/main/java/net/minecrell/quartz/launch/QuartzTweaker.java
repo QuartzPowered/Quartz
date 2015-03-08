@@ -30,8 +30,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
-import net.minecrell.quartz.launch.mappings.Mappings;
+import net.minecrell.quartz.launch.mappings.MappingsLoader;
 import net.minecrell.quartz.launch.mappings.MappingsParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -122,7 +123,7 @@ public final class QuartzTweaker implements ITweaker {
             loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
             logger.info("Initializing Mappings...");
-            Mappings.initialize();
+            Launch.blackboard.put("quartz.mappings", MappingsLoader.load());
             loader.registerTransformer("net.minecrell.quartz.launch.transformers.MappingsTransformer");
 
             logger.info("Initializing Mixin environment...");

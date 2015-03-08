@@ -27,11 +27,15 @@
 package net.minecraft.server;
 
 import net.minecrell.quartz.launch.mappings.Mapping;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
 @Mapping
 public abstract class MinecraftServer {
+
+    @Mapping("k")
+    private static final Logger logger = null;
 
     @Mapping("i")
     protected abstract boolean startServer() throws IOException;
