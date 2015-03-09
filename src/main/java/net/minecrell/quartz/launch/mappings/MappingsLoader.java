@@ -27,17 +27,10 @@
 
 package net.minecrell.quartz.launch.mappings;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableTable;
-import net.minecrell.quartz.launch.util.ParsedAnnotation;
 import org.apache.commons.lang3.StringUtils;
-import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,20 +48,16 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class MappingsLoader {
+public final class MappingsLoader {
+
+    private MappingsLoader() {}
 
     public static final String PACKAGE = "net/minecraft/server";
     public static final String PACKAGE_CLASS = "net.minecraft.server.";
     private static final String PACKAGE_PREFIX = PACKAGE + '/';
     private static final String MAPPINGS_DIR = "mappings/";
 
-    private final List<ClassNode> mappingClasses;
-
-    protected MappingsLoader(List<ClassNode> mappingClasses) {
-        this.mappingClasses = mappingClasses;
-    }
-
-    public static MappingsLoader load() throws IOException {
+    public static Mappings load() throws IOException {
         URI source;
         try {
             source = requireNonNull(Mapping.class.getProtectionDomain().getCodeSource(), "Unable to find class source").getLocation().toURI();
@@ -119,59 +108,7 @@ public class MappingsLoader {
             }
         }
 
-        return new MappingsLoader(mappingClasses);
-    }
-
-    public ImmutableBiMap<String, String> loadClasses() {
-        ImmutableBiMap.Builder<String, String> classes = ImmutableBiMap.builder();
-
-        for (ClassNode classNode : mappingClasses) {
-            ParsedAnnotation mappingAnnotation = MappingsParser.getClassMapping(classNode);
-            checkState(mappingAnnotation != null, "Class %s is missing the @Mapping annotation", classNode.name);
-            String mapping = mappingAnnotation.getString("value", "");
-            if (!mapping.isEmpty()) {
-                classes.put(mapping, classNode.name);
-            }
-        }
-
-        return classes.build();
-    }
-
-    public ImmutableTable<String, String, String> loadFields(Remapper remapper) {
-        ImmutableTable.Builder<String, String, String> fields = ImmutableTable.builder();
-
-        for (ClassNode classNode : mappingClasses) {
-            for (FieldNode fieldNode : classNode.fields) {
-                ParsedAnnotation mappingAnnotation = MappingsParser.getFieldMapping(fieldNode);
-                //checkState(mappingAnnotation != null, "Field %s in %s is missing the @Mapping annotation", fieldNode.name, classNode.name);
-                if (mappingAnnotation == null) continue; // TODO
-                String mapping = mappingAnnotation.getString("value", "");
-                if (!mapping.isEmpty()) {
-                    fields.put(classNode.name, mapping + ':' + remapper.mapDesc(fieldNode.desc), fieldNode.name);
-                }
-            }
-        }
-
-        return fields.build();
-    }
-
-    public ImmutableTable<String, String, String> loadMethods(Remapper remapper) {
-        ImmutableTable.Builder<String, String, String> methods = ImmutableTable.builder();
-
-        for (ClassNode classNode : mappingClasses) {
-            for (MethodNode methodNode : classNode.methods) {
-                if (methodNode.name.charAt(0) == '<') continue;
-                ParsedAnnotation mappingAnnotation = MappingsParser.getMethodMapping(methodNode);
-                //checkState(mappingAnnotation != null, "Method %s in %s is missing the @Mapping annotation", methodNode.name, classNode.name);
-                if (mappingAnnotation == null) continue; // TODO
-                String mapping = mappingAnnotation.getString("value", "");
-                if (!mapping.isEmpty()) {
-                    methods.put(classNode.name, mapping + remapper.mapDesc(methodNode.desc), methodNode.name);
-                }
-            }
-        }
-
-        return methods.build();
+        return new Mappings(mappingClasses);
     }
 
 }

@@ -32,6 +32,7 @@ import com.google.common.base.Throwables;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecrell.quartz.launch.mappings.Mappings;
 import net.minecrell.quartz.launch.mappings.MappingsLoader;
 import net.minecrell.quartz.launch.mappings.MappingsParser;
 import org.apache.logging.log4j.LogManager;
@@ -123,8 +124,14 @@ public final class QuartzTweaker implements ITweaker {
             loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
             logger.info("Initializing Mappings...");
-            Launch.blackboard.put("quartz.mappings", MappingsLoader.load());
-            loader.registerTransformer("net.minecrell.quartz.launch.transformers.MappingsTransformer");
+            Mappings mappings = MappingsLoader.load();
+            Launch.blackboard.put("quartz.mappings", mappings);
+            loader.registerTransformer("net.minecrell.quartz.launch.transformers.DeobfuscationTransformer");
+
+            if (mappings.hasAccessMappings()) {
+                logger.info("Enabling access transformer...");
+                loader.registerTransformer("net.minecrell.quartz.launch.transformers.AccessTransformer");
+            }
 
             logger.info("Initializing Mixin environment...");
             MixinBootstrap.init();

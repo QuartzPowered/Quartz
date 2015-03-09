@@ -26,6 +26,7 @@
  */
 package net.minecraft.server;
 
+import net.minecrell.quartz.launch.mappings.Accessible;
 import net.minecrell.quartz.launch.mappings.Mapping;
 import org.apache.logging.log4j.Logger;
 
@@ -35,7 +36,8 @@ import java.io.IOException;
 public abstract class MinecraftServer {
 
     @Mapping("k")
-    private static final Logger logger = null;
+    @Accessible
+    public static final Logger logger = null;
 
     @Mapping("i")
     protected abstract boolean startServer() throws IOException;

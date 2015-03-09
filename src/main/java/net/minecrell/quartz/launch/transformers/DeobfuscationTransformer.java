@@ -31,13 +31,12 @@ import static java.util.Objects.requireNonNull;
 
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Maps;
 import net.minecraft.launchwrapper.IClassNameTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
+import net.minecrell.quartz.launch.mappings.Mappings;
 import net.minecrell.quartz.launch.mappings.MappingsLoader;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.ClassReader;
@@ -52,76 +51,35 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class MappingsTransformer extends Remapper implements IClassTransformer, IClassNameTransformer {
+public class DeobfuscationTransformer extends Remapper implements IClassTransformer, IClassNameTransformer {
 
-    private final ImmutableBiMap<String, String> classes;
-    private final ImmutableTable<String, String, String> rawFields;
-    private final ImmutableTable<String, String, String> rawMethods;
+    private final Mappings mappings;
 
-    private final Map<String, Map<String, String>> fields;
     private final Map<String, Map<String, String>> methods;
+    private final Map<String, Map<String, String>> fields;
 
-    private final Set<String> failedFields = new HashSet<>();
     private final Set<String> failedMethods = new HashSet<>();
+    private final Set<String> failedFields = new HashSet<>();
 
-    public MappingsTransformer() {
-        this((MappingsLoader) Launch.blackboard.get("quartz.mappings"));
+    public DeobfuscationTransformer() {
+        this((Mappings) Launch.blackboard.get("quartz.mappings"));
     }
 
     // For custom transformers
-    protected MappingsTransformer(MappingsLoader loader) {
-        requireNonNull(loader, "loader");
+    protected DeobfuscationTransformer(Mappings mappings) {
+        this.mappings = requireNonNull(mappings, "mappings");
 
-        this.classes = loader.loadClasses();
-
-        Remapper inverse = new Remapper() {
-
-            @Override
-            public String map(String typeName) {
-                return unmap(typeName);
-            }
-        };
-
-        this.rawFields = loader.loadFields(inverse);
-        this.rawMethods = loader.loadMethods(inverse);
-
-        this.fields = Maps.newHashMapWithExpectedSize(rawFields.size());
-        this.methods = Maps.newHashMapWithExpectedSize(rawMethods.size());
+        this.methods = Maps.newHashMapWithExpectedSize(mappings.getMethods().size());
+        this.fields = Maps.newHashMapWithExpectedSize(mappings.getFields().size());
     }
 
     @Override
     public String map(String typeName) {
-        String name = classes.get(typeName);
-        if (name != null) {
-            return name;
-        }
-
-        int innerClassPos = typeName.lastIndexOf('$');
-        if (innerClassPos >= 0) {
-            name = classes.get(typeName.substring(0, innerClassPos));
-            if (name != null) {
-                return name + typeName.substring(innerClassPos);
-            }
-        }
-
-        return typeName;
+        return mappings.map(typeName);
     }
 
     public String unmap(String typeName) {
-        String name = classes.inverse().get(typeName);
-        if (name != null) {
-            return name;
-        }
-
-        int innerClassPos = typeName.lastIndexOf('$');
-        if (innerClassPos >= 0) {
-            name = classes.inverse().get(typeName.substring(0, innerClassPos));
-            if (name != null) {
-                return name + typeName.substring(innerClassPos);
-            }
-        }
-
-        return typeName;
+        return mappings.unmap(typeName);
     }
 
     @Override
@@ -223,26 +181,26 @@ public class MappingsTransformer extends Remapper implements IClassTransformer, 
             }
         }
 
-        Map<String, String> fields = new HashMap<>();
         Map<String, String> methods = new HashMap<>();
+        Map<String, String> fields = new HashMap<>();
 
         Map<String, String> m;
         for (String parent : parents) {
-            m = this.fields.get(parent);
-            if (m != null) {
-                fields.putAll(m);
-            }
             m = this.methods.get(parent);
             if (m != null) {
                 methods.putAll(m);
             }
+            m = this.fields.get(parent);
+            if (m != null) {
+                fields.putAll(m);
+            }
         }
 
-        fields.putAll(rawFields.row(name));
-        methods.putAll(rawMethods.row(name));
+        methods.putAll(mappings.getMethods().row(name));
+        fields.putAll(mappings.getFields().row(name));
 
-        this.fields.put(name, ImmutableMap.copyOf(fields));
         this.methods.put(name, ImmutableMap.copyOf(methods));
+        this.fields.put(name, ImmutableMap.copyOf(fields));
     }
 
     @Override
@@ -264,16 +222,12 @@ public class MappingsTransformer extends Remapper implements IClassTransformer, 
     private class RemappingAdapter extends RemappingClassAdapter {
 
         public RemappingAdapter(ClassVisitor cv) {
-            super(cv, MappingsTransformer.this);
+            super(cv, DeobfuscationTransformer.this);
         }
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-            if (interfaces == null) {
-                interfaces = ArrayUtils.EMPTY_STRING_ARRAY;
-            }
-
-            createSuperMaps(name, superName, interfaces);
+            createSuperMaps(name, superName, interfaces != null ? interfaces : ArrayUtils.EMPTY_STRING_ARRAY);
             super.visit(version, access, name, signature, superName, interfaces);
         }
 

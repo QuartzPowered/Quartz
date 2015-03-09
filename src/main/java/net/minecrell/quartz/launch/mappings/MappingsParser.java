@@ -43,8 +43,8 @@ import java.util.Map;
 
 public final class MappingsParser {
 
-    private static final String MAPPING = Type.getDescriptor(Mapping.class);
-    private static final String ACCESSIBLE = Type.getDescriptor(Accessible.class);
+    public static final String MAPPING = Type.getDescriptor(Mapping.class);
+    public static final String ACCESSIBLE = Type.getDescriptor(Accessible.class);
 
     private MappingsParser() {}
 
@@ -62,6 +62,22 @@ public final class MappingsParser {
         return null;
     }
 
+    public static ParsedAnnotation getAnnotation(ClassNode classNode, String annotationDesc) {
+        return parseAnnotation(classNode.invisibleAnnotations, annotationDesc);
+    }
+
+    public static ParsedAnnotation getAnnotation(MethodNode methodNode, String annotationDesc) {
+        return parseAnnotation(methodNode.invisibleAnnotations, annotationDesc);
+    }
+
+    public static ParsedAnnotation getAnnotation(FieldNode fieldNode, String annotationDesc) {
+        return parseAnnotation(fieldNode.invisibleAnnotations, annotationDesc);
+    }
+
+    public static boolean isMappingsClass(byte[] bytes) {
+        return getAnnotation(loadClassStructure(bytes), MAPPING) != null;
+    }
+
     private static Map<String, ParsedAnnotation> parseAnnotations(List<AnnotationNode> annotationNodes) {
         if (annotationNodes == null || annotationNodes.isEmpty()) {
             return Collections.emptyMap();
@@ -75,24 +91,16 @@ public final class MappingsParser {
         return builder.build();
     }
 
-    private static ParsedAnnotation getMapping(List<AnnotationNode> annotationNodes) {
-        return parseAnnotation(annotationNodes, MAPPING);
+    public static Map<String, ParsedAnnotation> getAnnotations(ClassNode classNode) {
+        return parseAnnotations(classNode.invisibleAnnotations);
     }
 
-    public static ParsedAnnotation getClassMapping(ClassNode classNode) {
-        return getMapping(classNode.invisibleAnnotations);
+    public static Map<String, ParsedAnnotation> getAnnotations(MethodNode methodNode) {
+        return parseAnnotations(methodNode.invisibleAnnotations);
     }
 
-    public static ParsedAnnotation getMethodMapping(MethodNode methodNode) {
-        return getMapping(methodNode.invisibleAnnotations);
-    }
-
-    public static ParsedAnnotation getFieldMapping(FieldNode fieldNode) {
-        return getMapping(fieldNode.invisibleAnnotations);
-    }
-
-    public static boolean isMappingsClass(byte[] bytes) {
-        return getClassMapping(loadClassStructure(bytes)) != null;
+    public static Map<String, ParsedAnnotation> getAnnotations(FieldNode fieldNode) {
+        return parseAnnotations(fieldNode.invisibleAnnotations);
     }
 
     public static ClassNode loadClassStructure(ClassReader reader) {
