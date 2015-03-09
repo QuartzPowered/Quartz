@@ -31,28 +31,9 @@ version = '0.1-SNAPSHOT'
 
 mainClassName = 'net.minecrell.quartz.launch.QuartzMain'
 
-configurations {
-    minecraft
-}
-
-sourceSets {
-    main {
-        compileClasspath += configurations.minecraft
-    }
-}
-
-idea {
-    module {
-        scopes.COMPILE.plus += [configurations.minecraft]
-    }
-}
+apply from: file('minecraft.gradle')
 
 dependencies {
-    minecraft project(':mappings')
-    compile(project(':mappings')) {
-        transitive = false
-    }
-
     compile(project(':SpongeAPI')) {
         exclude module: 'guava'
         exclude module: 'jsr305'
@@ -93,23 +74,23 @@ jar {
     }
 }
 
-def getClassFiles(project) {
-    new File(new File(project.buildDir, 'classes'), 'main')
-}
-
-shadowJar.doFirst {
+classes << {
+    def destDir = new File(new File(project.buildDir, 'classes'), 'main')
     copy {
-        from getClassFiles(project(':mappings'))
+        from destDir
+        into destDir
         include 'net/minecraft/**'
-        into new File(new File(temporaryDir, 'mappings'), 'mappings')
+        eachFile {
+            it.path = "mappings/$it.path"
+        }
     }
+
+    // The empty folders are still in there but meh... See https://issues.gradle.org/browse/GRADLE-2822
+    delete fileTree(dir: destDir, include: 'net/minecraft/**')
 }
 
 shadowJar {
     classifier = ''
-    exclude 'net/minecraft/**'
-
-    from new File(temporaryDir, 'mappings')
 }
 build.dependsOn(shadowJar)
 
