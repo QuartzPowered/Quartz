@@ -27,7 +27,7 @@ repositories {
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
-version = '0.1-SNAPSHOT'
+version = 'mc1.8.3-SNAPSHOT'
 
 mainClassName = 'net.minecrell.quartz.launch.QuartzMain'
 
