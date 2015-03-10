@@ -31,4 +31,6 @@ import net.minecrell.quartz.launch.mappings.Mapping;
 @Mapping("kp")
 public abstract class DedicatedServer extends MinecraftServer {
 
+    public static final String DEDICATED_SERVER = "Lnet/minecraft/server/DedicatedServer;";
+
 }

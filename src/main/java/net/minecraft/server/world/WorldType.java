@@ -24,17 +24,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server;
+package net.minecraft.server.world;
 
 import net.minecrell.quartz.launch.mappings.Mapping;
 
-@Mapping("a")
-public enum ChatFormatting {
-
-    @Mapping("a")
-    BLACK,
-    @Mapping("m")
-    RED
-
+@Mapping("ads")
+public abstract class WorldType {
 
 }

@@ -26,46 +26,9 @@
  */
 package net.minecraft.server;
 
-import net.minecraft.server.status.ServerStatusResponse;
-import net.minecraft.server.world.WorldType;
 import net.minecrell.quartz.launch.mappings.Mapping;
 
-import java.io.IOException;
-
-@Mapping
-public abstract class MinecraftServer {
-
-    public static final String MINECRAFT_SERVER = "Lnet/minecraft/server/MinecraftServer;";
-
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
-
-    @Mapping("a")
-    public abstract void setManager(ServerManager manager);
-
-    public static final String setManager = "setManager(Lnet/minecraft/server/ServerManager;)V";
-
-    @Mapping("a")
-    protected abstract void loadWorlds(String folder1, String folder2, long seed, WorldType type, String settings);
-
-    public static final String loadWorlds = "loadWorlds(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/server/world/WorldType;"
-            + "Ljava/lang/String;)V";
-
-
-    @Mapping("a")
-    private void loadFavicon(ServerStatusResponse response) {
-    }
-
-    public static final String loadFavicon = "loadFavicon(Lnet/minecraft/server/status/ServerStatusResponse;)V";
-
-    @Mapping("a")
-    protected abstract void stop(CrashReport crash);
-
-    public static final String stop = "stop(Lnet/minecraft/server/CrashReport;)V";
-
-    @Mapping("y")
-    protected abstract void exit();
-
-    public static final String exit = "exit()V";
+@Mapping("b")
+public abstract class CrashReport {
 
 }

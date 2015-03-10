@@ -27,9 +27,13 @@
 
 package net.minecrell.quartz.mixin;
 
+import static net.minecraft.server.DedicatedServer.DEDICATED_SERVER;
+
 import net.minecraft.server.DedicatedServer;
 import net.minecraft.server.MinecraftServer;
-import org.apache.logging.log4j.LogManager;
+import net.minecrell.quartz.Quartz;
+import org.spongepowered.api.event.state.ServerAboutToStartEvent;
+import org.spongepowered.api.event.state.ServerStartingEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,9 +42,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(DedicatedServer.class)
 public abstract class MixinDedicatedServer extends MinecraftServer {
 
-    @Inject(method = "startServer", at = @At("HEAD"))
-    public void onStartServer(CallbackInfoReturnable<Boolean> ci) {
-        LogManager.getLogger().info("LEL");
+    @Inject(method = "startServer", at = @At(value = "INVOKE_STRING", target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V",
+            args = {"ldc=Loading properties"}, shift = At.Shift.BY, by = -2, remap = false))
+    public void onServerLoad(CallbackInfoReturnable<Boolean> ci) {
+        Quartz.instance.load();
+    }
+
+    @Inject(method = "startServer", at = @At(value = "INVOKE", target = DEDICATED_SERVER + setManager, shift = At.Shift.BY, by = -7))
+    public void onServerInitialize(CallbackInfoReturnable<Boolean> ci) {
+        Quartz.instance.initialize();
+    }
+
+    @Inject(method = "startServer", at = @At(value = "INVOKE", target = DEDICATED_SERVER + loadWorlds, shift = At.Shift.BY, by = -24))
+    public void onServerAboutToStart(CallbackInfoReturnable<Boolean> ci) {
+        Quartz.instance.postState(ServerAboutToStartEvent.class);
+    }
+
+    @Inject(method = "startServer", at = @At(value = "INVOKE", target = DEDICATED_SERVER + loadWorlds, shift = At.Shift.AFTER))
+    public void onServerStarting(CallbackInfoReturnable<Boolean> ci) {
+        Quartz.instance.postState(ServerStartingEvent.class);
     }
 
 }

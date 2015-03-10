@@ -74,23 +74,24 @@ jar {
     }
 }
 
+def tmpDir = java.nio.file.Files.createTempDirectory(null).toFile()
+
 classes << {
-    def destDir = new File(new File(project.buildDir, 'classes'), 'main')
     copy {
-        from destDir
-        into destDir
+        from new File(new File(project.buildDir, 'classes'), 'main')
+        into tmpDir
         include 'net/minecraft/**'
         eachFile {
             it.path = "mappings/$it.path"
         }
     }
-
-    // The empty folders are still in there but meh... See https://issues.gradle.org/browse/GRADLE-2822
-    delete fileTree(dir: destDir, include: 'net/minecraft/**')
 }
 
 shadowJar {
     classifier = ''
+    exclude 'net/minecraft/**'
+
+    from tmpDir
 }
 build.dependsOn(shadowJar)
 

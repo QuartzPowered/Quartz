@@ -27,10 +27,37 @@
 
 package net.minecrell.quartz.mixin;
 
+import static net.minecraft.server.MinecraftServer.MINECRAFT_SERVER;
+import static net.minecraft.server.MinecraftServer.exit;
+import static net.minecraft.server.MinecraftServer.loadFavicon;
+import static net.minecraft.server.MinecraftServer.stop;
+
 import net.minecraft.server.MinecraftServer;
+import net.minecrell.quartz.Quartz;
+import org.spongepowered.api.event.state.ServerStartedEvent;
+import org.spongepowered.api.event.state.ServerStoppedEvent;
+import org.spongepowered.api.event.state.ServerStoppingEvent;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
-public class MixinMinecraftServer {
+public abstract class MixinMinecraftServer {
+
+    @Inject(method = "run", at = @At(value = "INVOKE", target = MINECRAFT_SERVER + loadFavicon, shift = At.Shift.AFTER))
+    public void onServerStarted(CallbackInfo ci) {
+        Quartz.instance.postState(ServerStartedEvent.class);
+    }
+
+    @Inject(method = "run", at = @At(value = "INVOKE", target = MINECRAFT_SERVER + stop, ordinal = 0, shift = At.Shift.BY, by = -8))
+    public void onServerStopping(CallbackInfo ci) {
+        Quartz.instance.postState(ServerStoppingEvent.class);
+    }
+
+    @Inject(method = "run", at = @At(value = "INVOKE", target = MINECRAFT_SERVER + exit))
+    public void onServerStopped(CallbackInfo ci) {
+        Quartz.instance.postState(ServerStoppedEvent.class);
+    }
 
 }
