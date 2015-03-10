@@ -116,7 +116,7 @@ public final class Quartz implements PluginContainer {
             getLogger().info("Loading plugins...");
             game.getPluginManager().loadPlugins();
             postState(ConstructionEvent.class);
-            getLogger().info("Done! Initializing plugins...");
+            getLogger().info("Initializing plugins...");
             postState(PreInitializationEvent.class);
         } catch (IOException e) {
             throw Throwables.propagate(e);

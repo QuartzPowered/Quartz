@@ -80,7 +80,7 @@ public final class QuartzTweaker implements ITweaker {
             // Check if we're running in development environment
             if (mainClass != null && MappingsParser.isMappingsClass(mainClass)) {
                 // We need to replace the main class because it clashes with our mapping
-                logger.info("Enabling main class transformer...");
+                logger.debug("Enabling main class transformer...");
                 loader.registerTransformer("net.minecrell.quartz.launch.transformers.MainClassTransformer");
             } else {
                 loader.clearNegativeEntries(Collections.singleton(MAIN_CLASS));
@@ -123,7 +123,7 @@ public final class QuartzTweaker implements ITweaker {
             // The server GUI won't work if we don't exclude this: log4j2 wants to have this in the same classloader
             loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
-            logger.info("Initializing Mappings...");
+            logger.debug("Initializing Mappings...");
             Mappings mappings = MappingsLoader.load(logger);
 
             logger.debug("Class mappings: {}", mappings.getClasses());
@@ -135,18 +135,18 @@ public final class QuartzTweaker implements ITweaker {
             loader.registerTransformer("net.minecrell.quartz.launch.transformers.DeobfuscationTransformer");
 
             if (mappings.hasAccessMappings()) {
-                logger.info("Enabling access transformer...");
+                logger.debug("Enabling access transformer...");
                 loader.registerTransformer("net.minecrell.quartz.launch.transformers.AccessTransformer");
             }
 
-            logger.info("Initializing Mixin environment...");
+            logger.debug("Initializing Mixin environment...");
             MixinBootstrap.init();
             MixinEnvironment env = MixinEnvironment.getCurrentEnvironment();
             env.addConfiguration("mixins.quartz.json");
             env.setSide(MixinEnvironment.Side.SERVER);
             loader.registerTransformer(MixinBootstrap.TRANSFORMER_CLASS);
 
-            logger.info("Done! Starting Minecraft server...");
+            logger.info("Starting Minecraft server...");
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }

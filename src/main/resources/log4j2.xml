@@ -24,5 +24,7 @@
             <AppenderRef ref="File"/>
             <AppenderRef ref="ServerGuiConsole"/>
         </Root>
+
+        <Logger name="LaunchWrapper" level="WARN"/>
     </Loggers>
 </Configuration>
