@@ -144,11 +144,6 @@ public class Mappings {
         this.methods = methods.build();
         this.fields = fields.build();
         this.accessMappings = accessMappings.build();
-
-        System.out.println(this.classes);
-        System.out.println(this.methods);
-        System.out.println(this.fields);
-        System.out.println(this.accessMappings);
     }
 
     public ImmutableBiMap<String, String> getClasses() {

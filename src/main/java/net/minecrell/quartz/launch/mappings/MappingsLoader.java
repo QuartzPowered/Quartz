@@ -30,6 +30,7 @@ package net.minecrell.quartz.launch.mappings;
 import static java.util.Objects.requireNonNull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.tree.ClassNode;
 
 import java.io.IOException;
@@ -57,7 +58,7 @@ public final class MappingsLoader {
     private static final String PACKAGE_PREFIX = PACKAGE + '/';
     private static final String MAPPINGS_DIR = "mappings/";
 
-    public static Mappings load() throws IOException {
+    public static Mappings load(Logger logger) throws IOException {
         URI source;
         try {
             source = requireNonNull(Mapping.class.getProtectionDomain().getCodeSource(), "Unable to find class source").getLocation().toURI();
@@ -66,7 +67,7 @@ public final class MappingsLoader {
         }
 
         Path location = Paths.get(source);
-        System.out.println(location);
+        logger.debug("Mappings location: {}", location);
 
         List<ClassNode> mappingClasses = new ArrayList<>();
 

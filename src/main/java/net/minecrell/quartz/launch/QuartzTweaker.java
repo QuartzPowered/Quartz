@@ -124,7 +124,13 @@ public final class QuartzTweaker implements ITweaker {
             loader.addClassLoaderExclusion("com.mojang.util.QueueLogAppender");
 
             logger.info("Initializing Mappings...");
-            Mappings mappings = MappingsLoader.load();
+            Mappings mappings = MappingsLoader.load(logger);
+
+            logger.debug("Class mappings: {}", mappings.getClasses());
+            logger.debug("Method mappings: {}", mappings.getMethods());
+            logger.debug("Field mappings: {}", mappings.getFields());
+            logger.debug("Access mappings: {}", mappings.getAccessMappings());
+
             Launch.blackboard.put("quartz.mappings", mappings);
             loader.registerTransformer("net.minecrell.quartz.launch.transformers.DeobfuscationTransformer");
 
