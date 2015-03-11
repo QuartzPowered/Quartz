@@ -69,7 +69,7 @@ jar {
                 'Implementation-Name': name,
                 'Implementation-Version': version,
                 'Implementation-Vendor': 'Minecrell',
-                'Class-Path': 'bin/launchwrapper-1.11.jar bin/minecraft_server.1.8.3.jar'
+                'Class-Path': 'bin/minecraft_server.1.8.3.jar bin/launchwrapper-1.11.jar'
         )
     }
 }

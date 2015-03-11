@@ -82,13 +82,6 @@ public final class QuartzMain {
             return false;
         }
 
-        // Maybe Launchwrapper is on the classpath already? (E.g. in development environment)
-        try {
-            Class.forName("net.minecraft.launchwrapper.Launch");
-            return true;
-        } catch (ClassNotFoundException ignored) {
-        }
-
         path = bin.resolve(LAUNCHWRAPPER_LOCAL);
         return Files.exists(path) || downloadVerified(LAUNCHWRAPPER_REMOTE, path);
     }
