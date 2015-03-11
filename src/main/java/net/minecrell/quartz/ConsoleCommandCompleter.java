@@ -44,22 +44,39 @@ public class ConsoleCommandCompleter implements Completer {
 
     @Override
     public int complete(String buffer, int cursor, List<CharSequence> candidates) {
-        Callable<List<String>> tabComplete = () -> server.getTabCompletions(server, '/' + buffer, server.getLocation());
+        int len = buffer.length();
+        buffer = buffer.trim();
+        if (buffer.isEmpty()) return cursor;
+
+        boolean prefix;
+        if (buffer.charAt(0) != '/') {
+            buffer = '/' + buffer;
+            prefix = false;
+        } else {
+            prefix = true;
+        }
+
+        String input = buffer;
+        Callable<List<String>> tabComplete = () -> server.getTabCompletions(server, input, server.getLocation());
         Future<List<String>> future = server.scheduleInMainThread(tabComplete);
 
         try {
             List<String> completions = future.get();
-            for (String completion : completions) {
-                if (completion.length() > 0) {
-                    candidates.add(completion.charAt(0) == '/' ? completion.substring(1) : completion);
+            if (prefix) {
+                candidates.addAll(completions);
+            } else {
+                for (String completion : completions) {
+                    if (!completion.isEmpty()) {
+                        candidates.add(completion.charAt(0) == '/' ? completion.substring(1) : completion);
+                    }
                 }
             }
 
             int pos = buffer.lastIndexOf(' ');
             if (pos == -1) {
-                return cursor - buffer.length();
+                return cursor - len;
             } else {
-                return cursor - (buffer.length() - pos - 1);
+                return cursor - (len - pos - 1);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

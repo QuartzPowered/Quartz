@@ -57,7 +57,7 @@ public abstract class MixinConsoleHandler extends Thread {
 
                 if (line != null) {
                     line = line.trim();
-                    if (line.length() > 0) {
+                    if (!line.isEmpty()) {
                         a.queueCommand(line, a);
                     }
                 }
