@@ -30,7 +30,11 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraft.server.chat.ChatComponent;
 import net.minecraft.server.network.packet.Packet;
 import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.launch.mappings.Virtual;
+import net.minecrell.quartz.mixin.network.MixinNetworkManager;
+import org.spongepowered.api.MinecraftVersion;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 @Mapping("el")
@@ -44,5 +48,20 @@ public abstract class NetworkManager extends SimpleChannelInboundHandler<Packet>
 
     @Mapping("a")
     public abstract void disconnect(ChatComponent reason);
+
+    @Virtual(mixin = MixinNetworkManager.class)
+    public abstract InetSocketAddress getAddress();
+
+    @Virtual(mixin = MixinNetworkManager.class)
+    public abstract InetSocketAddress getVirtualHost();
+
+    @Virtual(mixin = MixinNetworkManager.class)
+    public abstract void setVirtualHost(String host, int port);
+
+    @Virtual(mixin = MixinNetworkManager.class)
+    public abstract MinecraftVersion getVersion();
+
+    @Virtual(mixin = MixinNetworkManager.class)
+    public abstract void setVersion(int version);
 
 }

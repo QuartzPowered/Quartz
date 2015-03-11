@@ -29,7 +29,6 @@ package net.minecrell.quartz.mixin.network;
 import net.minecraft.server.network.NetworkHandshakeHandler;
 import net.minecraft.server.network.NetworkManager;
 import net.minecraft.server.network.packet.handshake.PacketC00Handshake;
-import net.minecrell.quartz.network.ConnectionInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -44,9 +43,8 @@ public abstract class MixinNetworkHandshakeManager {
 
     @Inject(method = "handleHandshake", at = @At("HEAD"))
     public void onProcessHandshake(PacketC00Handshake packet, CallbackInfo ci) {
-        ConnectionInfo info = (ConnectionInfo) this.manager;
-        info.setVersion(packet.getProtocolVersion());
-        info.setVirtualHost(packet.ip, packet.port);
+        manager.setVersion(packet.getProtocolVersion());
+        manager.setVirtualHost(packet.ip, packet.port);
     }
 
 }

@@ -24,22 +24,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package net.minecrell.quartz.launch.mappings;
 
-package net.minecrell.quartz.network;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.spongepowered.api.MinecraftVersion;
+@Retention(RetentionPolicy.SOURCE)
+@Target({
+        ElementType.METHOD,
+        ElementType.FIELD
+})
+public @interface Virtual {
 
-import java.net.InetSocketAddress;
+    Class<?>[] mixin() default {};
 
-public interface ConnectionInfo {
-
-    InetSocketAddress getAddress();
-
-    InetSocketAddress getVirtualHost();
-
-    void setVirtualHost(String host, int port);
-
-    MinecraftVersion getVersion();
-
-    void setVersion(int version);
 }

@@ -30,7 +30,6 @@ package net.minecrell.quartz.status;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import net.minecraft.server.network.NetworkManager;
-import net.minecrell.quartz.network.ConnectionInfo;
 import org.spongepowered.api.MinecraftVersion;
 import org.spongepowered.api.status.StatusClient;
 
@@ -38,10 +37,10 @@ import java.net.InetSocketAddress;
 
 public class QuartzStatusClient implements StatusClient {
 
-    private final ConnectionInfo connection;
+    private final NetworkManager connection;
 
     public QuartzStatusClient(NetworkManager networkManager) {
-        this.connection = (ConnectionInfo) networkManager;
+        this.connection = networkManager;
     }
 
     @Override

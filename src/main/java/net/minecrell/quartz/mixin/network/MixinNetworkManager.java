@@ -28,7 +28,6 @@ package net.minecrell.quartz.mixin.network;
 
 import net.minecraft.server.network.NetworkManager;
 import net.minecrell.quartz.QuartzMinecraftVersion;
-import net.minecrell.quartz.network.ConnectionInfo;
 import org.spongepowered.api.MinecraftVersion;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,7 +36,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 @Mixin(NetworkManager.class)
-public abstract class MixinNetworkManager implements ConnectionInfo {
+public abstract class MixinNetworkManager {
 
     @Shadow
     public abstract SocketAddress getRemoteAddress();
@@ -45,27 +44,22 @@ public abstract class MixinNetworkManager implements ConnectionInfo {
     private InetSocketAddress virtualHost;
     private MinecraftVersion version;
 
-    @Override
     public InetSocketAddress getAddress() {
         return (InetSocketAddress) getRemoteAddress();
     }
 
-    @Override
     public InetSocketAddress getVirtualHost() {
         return virtualHost;
     }
 
-    @Override
     public void setVirtualHost(String host, int port) {
         this.virtualHost = InetSocketAddress.createUnresolved(host, port);
     }
 
-    @Override
     public MinecraftVersion getVersion() {
         return version;
     }
 
-    @Override
     public void setVersion(int version) {
         this.version = new QuartzMinecraftVersion(String.valueOf(version), version);
     }
