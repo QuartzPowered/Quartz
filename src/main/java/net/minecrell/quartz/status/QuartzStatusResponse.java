@@ -57,10 +57,10 @@ public final class QuartzStatusResponse {
             @Nullable InetSocketAddress virtualHost) {
         ServerStatusResponse response = create(server);
         response.setVersion(
-                new ServerStatusResponse.Version(response.getVersion().getName(), Byte.MAX_VALUE));
+                ServerStatusResponse.Version.create(response.getVersion().getName(), Byte.MAX_VALUE));
         response = call(response, new QuartzLegacyStatusClient(address, version, virtualHost));
         if (response != null && response.getPlayers() == null) {
-            response.setPlayers(new ServerStatusResponse.Players(-1, 0));
+            response.setPlayers(ServerStatusResponse.Players.create(-1, 0));
         }
         return response;
     }
@@ -80,7 +80,7 @@ public final class QuartzStatusResponse {
     }
 
     private static ServerStatusResponse clone(ServerStatusResponse original) {
-        ServerStatusResponse clone = new ServerStatusResponse();
+        ServerStatusResponse clone = ServerStatusResponse.create();
         clone.setDescription(original.getDescription());
         if (original.getFavicon() != null) {
             ((StatusPingEvent.Response) clone).setFavicon(((StatusResponse) original).getFavicon().get());
@@ -92,7 +92,7 @@ public final class QuartzStatusResponse {
     }
 
     private static ServerStatusResponse.Players clone(ServerStatusResponse.Players original) {
-        ServerStatusResponse.Players clone = new ServerStatusResponse.Players(original.getMax(), original.getOnline());
+        ServerStatusResponse.Players clone = ServerStatusResponse.Players.create(original.getMax(), original.getOnline());
         clone.setPlayers(original.getPlayers());
         return clone;
     }

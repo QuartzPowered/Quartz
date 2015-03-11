@@ -169,12 +169,18 @@ public final class QuartzTweaker implements ITweaker {
             logger.debug("Class mappings: {}", mappings.getClasses());
             logger.debug("Method mappings: {}", mappings.getMethods());
             logger.debug("Field mappings: {}", mappings.getFields());
+            logger.debug("Class constructors: {}", mappings.getConstructors());
             logger.debug("Access mappings: {}", mappings.getAccessMappings());
 
             Launch.blackboard.put("quartz.mappings", mappings);
             loader.registerTransformer("net.minecrell.quartz.launch.transformers.DeobfuscationTransformer");
 
-            if (mappings.hasAccessMappings()) {
+            if (!mappings.getConstructors().isEmpty()) {
+                logger.debug("Enabling constructor transformer");
+                loader.registerTransformer("net.minecrell.quartz.launch.transformers.ConstructorTransformer");
+            }
+
+            if (!mappings.getAccessMappings().isEmpty()) {
                 logger.debug("Enabling access transformer...");
                 loader.registerTransformer("net.minecrell.quartz.launch.transformers.AccessTransformer");
             }

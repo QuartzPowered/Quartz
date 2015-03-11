@@ -26,7 +26,7 @@
  */
 package net.minecraft.server.world;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("ads")
 public abstract class WorldType {

@@ -27,7 +27,7 @@
 package net.minecraft.server.network.packet.status;
 
 import net.minecraft.server.network.packet.Packet;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("jw")
 public abstract class PacketC00StatusRequest implements Packet {

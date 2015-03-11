@@ -27,7 +27,7 @@
 package net.minecraft.server;
 
 import net.minecraft.server.command.CommandSender;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 import org.apache.logging.log4j.Logger;
 
 @Mapping("kp")

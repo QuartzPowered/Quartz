@@ -27,7 +27,7 @@
 package net.minecraft.server.network;
 
 import net.minecraft.server.network.handler.HandshakeHandler;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("lo")
 public abstract class NetworkHandshakeHandler implements HandshakeHandler {

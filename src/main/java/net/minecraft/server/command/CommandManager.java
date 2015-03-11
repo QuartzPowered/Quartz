@@ -26,7 +26,7 @@
  */
 package net.minecraft.server.command;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("m")
 public interface CommandManager {

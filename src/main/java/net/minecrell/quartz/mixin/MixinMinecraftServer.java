@@ -67,7 +67,7 @@ public abstract class MixinMinecraftServer implements Server, CommandSource, Com
     @Override
     public void sendMessage(String... messages) {
         for (String message : messages) {
-            sendMessage(new TextComponent(message));
+            sendMessage(TextComponent.create(message));
         }
     }
 

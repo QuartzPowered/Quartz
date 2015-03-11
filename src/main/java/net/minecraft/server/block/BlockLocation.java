@@ -26,7 +26,7 @@
  */
 package net.minecraft.server.block;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("ck")
 public abstract class BlockLocation {

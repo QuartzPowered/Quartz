@@ -27,7 +27,7 @@
 package net.minecraft.server.network.handler;
 
 import net.minecraft.server.network.packet.status.PacketC00StatusRequest;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("ju")
 public interface StatusHandler {

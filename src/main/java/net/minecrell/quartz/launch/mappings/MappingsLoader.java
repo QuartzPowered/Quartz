@@ -29,6 +29,7 @@ package net.minecrell.quartz.launch.mappings;
 
 import static java.util.Objects.requireNonNull;
 
+import net.minecrell.quartz.mappings.Mapping;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.tree.ClassNode;

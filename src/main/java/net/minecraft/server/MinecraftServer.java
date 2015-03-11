@@ -31,7 +31,7 @@ import net.minecraft.server.block.BlockLocation;
 import net.minecraft.server.command.CommandSender;
 import net.minecraft.server.status.ServerStatusResponse;
 import net.minecraft.server.world.WorldType;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 import java.io.IOException;
 import java.util.List;

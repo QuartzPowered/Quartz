@@ -28,6 +28,9 @@ package net.minecrell.quartz.launch.mappings;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecrell.quartz.launch.util.ParsedAnnotation;
+import net.minecrell.quartz.mappings.Accessible;
+import net.minecrell.quartz.mappings.Constructor;
+import net.minecrell.quartz.mappings.Mapping;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -45,6 +48,7 @@ public final class MappingsParser {
 
     public static final String MAPPING = Type.getDescriptor(Mapping.class);
     public static final String ACCESSIBLE = Type.getDescriptor(Accessible.class);
+    public static final String CONSTRUCTOR = Type.getDescriptor(Constructor.class);
 
     private MappingsParser() {}
 

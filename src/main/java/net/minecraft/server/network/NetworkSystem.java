@@ -27,7 +27,7 @@
 package net.minecraft.server.network;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("lm")
 public abstract class NetworkSystem {

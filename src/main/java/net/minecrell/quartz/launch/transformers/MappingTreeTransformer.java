@@ -26,35 +26,58 @@
  */
 package net.minecrell.quartz.launch.transformers;
 
-import com.google.common.io.ByteStreams;
+import static java.util.Objects.requireNonNull;
+
 import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecrell.quartz.launch.QuartzTweaker;
+import net.minecraft.launchwrapper.Launch;
+import net.minecrell.quartz.launch.mappings.Mappings;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.zip.ZipFile;
+public abstract class MappingTreeTransformer implements IClassTransformer {
 
-public class MainClassTransformer implements IClassTransformer {
+    protected final Mappings mappings;
 
-    private final byte[] mainClass;
-
-    public MainClassTransformer() throws IOException {
-        Path serverJar = QuartzTweaker.getServerJar();
-        try (ZipFile zip = new ZipFile(serverJar.toFile())) {
-            try (InputStream in = zip.getInputStream(zip.getEntry(QuartzTweaker.MAIN_CLASS))) {
-                this.mainClass = ByteStreams.toByteArray(in);
-            }
-        }
+    protected MappingTreeTransformer() {
+        this((Mappings) Launch.blackboard.get("quartz.mappings"));
     }
+
+    protected MappingTreeTransformer(Mappings mappings) {
+        this.mappings = requireNonNull(mappings, "mappings");
+    }
+
+    protected int readerFlags() {
+        return 0;
+    }
+
+    protected int writerFlags() {
+        return 0;
+    }
+
+    protected abstract boolean transform(String name, String transformedName);
+
+    protected abstract void transform(String name, String transformedName, ClassNode classNode);
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        if (basicClass != null && name.equals(QuartzTweaker.MAIN)) {
-            return mainClass;
-        } else {
+        if (basicClass == null) {
+            return null;
+        }
+
+        if (!transform(name, transformedName)) {
             return basicClass;
         }
+
+        ClassNode classNode = new ClassNode();
+        ClassReader reader = new ClassReader(basicClass);
+        reader.accept(classNode, readerFlags());
+
+        transform(name, transformedName, classNode);
+
+        ClassWriter writer = new ClassWriter(writerFlags());
+        classNode.accept(writer);
+        return writer.toByteArray();
     }
 
 }

@@ -28,12 +28,15 @@ package net.minecraft.server.network.packet.status;
 
 import net.minecraft.server.network.packet.Packet;
 import net.minecraft.server.status.ServerStatusResponse;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Constructor;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("js")
-public class PacketS00StatusResponse implements Packet {
+public abstract class PacketS00StatusResponse implements Packet {
 
-    public PacketS00StatusResponse(ServerStatusResponse response) {
+    @Constructor
+    public static PacketS00StatusResponse create(ServerStatusResponse response) {
+        return null;
     }
 
 }

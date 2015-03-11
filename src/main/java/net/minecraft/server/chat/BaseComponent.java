@@ -26,21 +26,9 @@
  */
 package net.minecraft.server.chat;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
-
-import java.util.Iterator;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("et")
 public abstract class BaseComponent implements ChatComponent {
-
-    @Override
-    public String toUnformattedText() {
-        return null;
-    }
-
-    @Override
-    public Iterator<ChatComponent> iterator() {
-        return null;
-    }
 
 }

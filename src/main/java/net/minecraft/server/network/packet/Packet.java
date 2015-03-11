@@ -26,7 +26,7 @@
  */
 package net.minecraft.server.network.packet;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("fg")
 public interface Packet {

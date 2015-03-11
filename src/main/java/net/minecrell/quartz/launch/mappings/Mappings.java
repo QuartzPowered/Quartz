@@ -29,10 +29,13 @@ package net.minecrell.quartz.launch.mappings;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static net.minecrell.quartz.launch.mappings.MappingsParser.ACCESSIBLE;
+import static net.minecrell.quartz.launch.mappings.MappingsParser.CONSTRUCTOR;
 import static net.minecrell.quartz.launch.mappings.MappingsParser.MAPPING;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableTable;
+import net.minecrell.quartz.launch.util.Methods;
 import net.minecrell.quartz.launch.util.ParsedAnnotation;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
@@ -48,14 +51,17 @@ public class Mappings {
     protected final ImmutableTable<String, String, String> methods;
     protected final ImmutableTable<String, String, String> fields;
 
+    protected final ImmutableMultimap<String, MethodNode> constructors;
+
     protected final ImmutableTable<String, String, AccessMapping> accessMappings;
 
     public Mappings(ImmutableBiMap<String, String> classes,
             ImmutableTable<String, String, String> methods, ImmutableTable<String, String, String> fields,
-            ImmutableTable<String, String, AccessMapping> accessMappings) {
+            ImmutableTable<String, String, AccessMapping> accessMappings, ImmutableMultimap<String, MethodNode> constructors) {
         this.classes = requireNonNull(classes, "classes");
         this.methods = requireNonNull(methods, "methods");
         this.fields = requireNonNull(fields, "fields");
+        this.constructors = requireNonNull(constructors, "constructors");
         this.accessMappings = requireNonNull(accessMappings, "accessMappings");
     }
 
@@ -65,6 +71,7 @@ public class Mappings {
             this.classes = ImmutableBiMap.of();
             this.methods = ImmutableTable.of();
             this.fields = ImmutableTable.of();
+            this.constructors = ImmutableMultimap.of();
             this.accessMappings = ImmutableTable.of();
             return;
         }
@@ -94,6 +101,7 @@ public class Mappings {
         // Load field, method and access mappings
         ImmutableTable.Builder<String, String, String> methods = ImmutableTable.builder();
         ImmutableTable.Builder<String, String, String> fields = ImmutableTable.builder();
+        ImmutableMultimap.Builder<String, MethodNode> constructors = ImmutableMultimap.builder();
         ImmutableTable.Builder<String, String, AccessMapping> accessMappings = ImmutableTable.builder();
 
         for (ClassNode classNode : mappingClasses) {
@@ -107,6 +115,14 @@ public class Mappings {
 
             for (MethodNode methodNode : classNode.methods) {
                 Map<String, ParsedAnnotation> annotations = MappingsParser.getAnnotations(methodNode);
+
+                annotation = annotations.get(CONSTRUCTOR);
+                if (annotation != null) {
+                    // Generate constructor call code
+                    Methods.visitConstructor(methodNode, classNode.name);
+                    constructors.put(className, methodNode);
+                    continue;
+                }
 
                 // TODO: Validation
                 annotation = annotations.get(MAPPING);
@@ -144,6 +160,7 @@ public class Mappings {
 
         this.methods = methods.build();
         this.fields = fields.build();
+        this.constructors = constructors.build();
         this.accessMappings = accessMappings.build();
     }
 
@@ -157,6 +174,10 @@ public class Mappings {
 
     public ImmutableTable<String, String, String> getFields() {
         return fields;
+    }
+
+    public ImmutableMultimap<String, MethodNode> getConstructors() {
+        return constructors;
     }
 
     public ImmutableTable<String, String, AccessMapping> getAccessMappings() {
@@ -197,10 +218,6 @@ public class Mappings {
         }
 
         return className; // Unknown class
-    }
-
-    public boolean hasAccessMappings() {
-        return !accessMappings.isEmpty();
     }
 
 }

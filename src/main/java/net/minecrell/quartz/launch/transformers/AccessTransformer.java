@@ -26,17 +26,12 @@
  */
 package net.minecrell.quartz.launch.transformers;
 
-import static java.util.Objects.requireNonNull;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
 import net.minecrell.quartz.launch.mappings.Access;
 import net.minecrell.quartz.launch.mappings.AccessMapping;
 import net.minecrell.quartz.launch.mappings.Mappings;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -48,32 +43,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class AccessTransformer implements IClassTransformer {
-
-    private final Mappings mappings;
+public class AccessTransformer extends MappingTreeTransformer {
 
     public AccessTransformer() {
-        this((Mappings) Launch.blackboard.get("quartz.mappings"));
     }
 
     protected AccessTransformer(Mappings mappings) {
-        this.mappings = requireNonNull(mappings, "mappings");
+        super(mappings);
     }
 
     @Override
-    public byte[] transform(String name, String transformedName, byte[] bytes) {
-        if (bytes == null) {
-            return null;
-        }
+    protected boolean transform(String name, String transformedName) {
+        return mappings.getAccessMappings().containsRow(transformedName);
+    }
 
-        if (!mappings.getAccessMappings().containsRow(transformedName)) {
-            return bytes;
-        }
-
-        ClassNode classNode = new ClassNode();
-        ClassReader reader = new ClassReader(bytes);
-        reader.accept(classNode, 0);
-
+    @Override
+    protected void transform(String name, String transformedName, ClassNode classNode) {
         List<MethodNode> overridable = null;
 
         for (Map.Entry<String, AccessMapping> entry : mappings.getAccessMappings().row(transformedName).entrySet()) {
@@ -135,9 +120,6 @@ public class AccessTransformer implements IClassTransformer {
                 }
             }
         }
-
-        ClassWriter writer = new ClassWriter(0);
-        classNode.accept(writer);
-        return writer.toByteArray();
     }
+
 }

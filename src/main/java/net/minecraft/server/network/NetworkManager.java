@@ -29,8 +29,7 @@ package net.minecraft.server.network;
 import io.netty.channel.SimpleChannelInboundHandler;
 import net.minecraft.server.chat.ChatComponent;
 import net.minecraft.server.network.packet.Packet;
-import net.minecrell.quartz.launch.mappings.Mapping;
-import net.minecrell.quartz.mixin.network.MixinNetworkManager;
+import net.minecrell.quartz.mappings.Mapping;
 import org.spongepowered.api.MinecraftVersion;
 
 import java.net.InetSocketAddress;

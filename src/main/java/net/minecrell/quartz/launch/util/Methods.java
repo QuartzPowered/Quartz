@@ -24,14 +24,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server.chat;
+package net.minecrell.quartz.launch.util;
 
-import net.minecrell.quartz.mappings.Mapping;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.NEW;
 
-@Mapping("ev")
-public interface ChatComponent extends Iterable<ChatComponent> {
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.MethodNode;
 
-    @Mapping("c")
-    String toUnformattedText();
+public final class Methods {
+
+    private Methods() {}
+
+    public static void visitConstructor(MethodNode methodNode, String target) {
+        methodNode.visitTypeInsn(NEW, target);
+        methodNode.visitInsn(DUP);
+
+        forward(methodNode, target, "<init>");
+    }
+
+    private static void forward(MethodNode methodNode, String owner, String name) {
+        Type[] parameters = Type.getArgumentTypes(methodNode.desc);
+        for (int i = 0; i < parameters.length; i++) {
+            methodNode.visitVarInsn(parameters[i].getOpcode(ILOAD), i);
+        }
+
+        methodNode.visitMethodInsn(INVOKESPECIAL, owner, name, Type.getMethodDescriptor(Type.VOID_TYPE, parameters), false);
+        methodNode.visitInsn(Type.getReturnType(methodNode.desc).getOpcode(IRETURN));
+    }
 
 }

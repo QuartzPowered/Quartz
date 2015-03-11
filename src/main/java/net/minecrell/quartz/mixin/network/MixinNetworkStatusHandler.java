@@ -53,7 +53,7 @@ public abstract class MixinNetworkStatusHandler implements StatusHandler {
         // Clone the response
         ServerStatusResponse response = QuartzStatusResponse.post(server, new QuartzStatusClient(manager));
         if (response != null) {
-            this.manager.sendPacket(new PacketS00StatusResponse(response));
+            this.manager.sendPacket(PacketS00StatusResponse.create(response));
         } else {
             this.manager.disconnect(null);
         }

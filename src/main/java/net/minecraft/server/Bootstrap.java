@@ -26,7 +26,7 @@
  */
 package net.minecraft.server;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("kc")
 public abstract class Bootstrap {

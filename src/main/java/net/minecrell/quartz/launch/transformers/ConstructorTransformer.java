@@ -24,20 +24,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package net.minecrell.quartz.launch.transformers;
 
-package net.minecrell.quartz.launch.mappings;
+import static org.objectweb.asm.ClassWriter.COMPUTE_MAXS;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import net.minecrell.quartz.launch.mappings.Mappings;
+import org.objectweb.asm.tree.ClassNode;
 
-@Retention(RetentionPolicy.CLASS)
-@Target({
-        ElementType.TYPE,
-        ElementType.METHOD,
-        ElementType.FIELD
-})
-public @interface Accessible {
+public class ConstructorTransformer extends MappingTreeTransformer {
+
+    public ConstructorTransformer() {
+    }
+
+    protected ConstructorTransformer(Mappings mappings) {
+        super(mappings);
+    }
+
+    @Override
+    protected int writerFlags() {
+        return COMPUTE_MAXS;
+    }
+
+    @Override
+    protected boolean transform(String name, String transformedName) {
+        return mappings.getConstructors().containsKey(transformedName);
+    }
+
+    @Override
+    protected void transform(String name, String transformedName, ClassNode classNode) {
+        classNode.methods.addAll(mappings.getConstructors().get(transformedName));
+    }
 
 }

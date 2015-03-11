@@ -29,7 +29,7 @@ package net.minecraft.server.network;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 import org.apache.logging.log4j.Logger;
 
 @Mapping("lk")

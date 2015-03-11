@@ -28,10 +28,11 @@ package net.minecraft.server.status;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.chat.ChatComponent;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Constructor;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("jt")
-public class ServerStatusResponse {
+public abstract class ServerStatusResponse {
 
     @Mapping("a")
     private ChatComponent description;
@@ -45,47 +46,37 @@ public class ServerStatusResponse {
     @Mapping("d")
     private String favicon;
 
-    public ServerStatusResponse() {
+    @Constructor
+    public static ServerStatusResponse create() {
+        return null;
     }
 
     @Mapping("a")
-    public ChatComponent getDescription() {
-        return description;
-    }
+    public abstract ChatComponent getDescription();
 
     @Mapping("a")
-    public void setDescription(ChatComponent description) {
-    }
+    public abstract void setDescription(ChatComponent description);
 
     @Mapping("b")
-    public Players getPlayers() {
-        return null;
-    }
+    public abstract Players getPlayers();
 
     @Mapping("a")
-    public void setPlayers(Players players) {
-    }
+    public abstract void setPlayers(Players players);
 
     @Mapping("c")
-    public Version getVersion() {
-        return null;
-    }
+    public abstract Version getVersion();
 
     @Mapping("a")
-    public void setVersion(Version version) {
-    }
+    public abstract void setVersion(Version version);
 
     @Mapping("d")
-    public String getFavicon() {
-        return null;
-    }
+    public abstract String getFavicon();
 
     @Mapping("a")
-    public void setFavicon(String favicon) {
-    }
+    public abstract void setFavicon(String favicon);
 
     @Mapping("jt$a")
-    public static class Players {
+    public static abstract class Players {
 
         @Mapping("a")
         private final int max = 0;
@@ -96,32 +87,27 @@ public class ServerStatusResponse {
         @Mapping("c")
         private GameProfile[] players;
 
-        public Players(int max, int online) {
-        }
-
-        @Mapping("a")
-        public int getMax() {
-            return 0;
-        }
-
-        @Mapping("b")
-        public int getOnline() {
-            return 0;
-        }
-
-        @Mapping("c")
-        public GameProfile[] getPlayers() {
+        @Constructor
+        public static Players create(int max, int online) {
             return null;
         }
 
         @Mapping("a")
-        public void setPlayers(GameProfile[] players) {
-        }
+        public abstract int getMax();
+
+        @Mapping("b")
+        public abstract int getOnline();
+
+        @Mapping("c")
+        public abstract GameProfile[] getPlayers();
+
+        @Mapping("a")
+        public abstract void setPlayers(GameProfile[] players);
 
     }
 
     @Mapping("jt$c")
-    public static class Version {
+    public static abstract class Version {
 
         @Mapping("a")
         private final String name = null;
@@ -129,18 +115,16 @@ public class ServerStatusResponse {
         @Mapping("b")
         private final int protocol = 0;
 
-        public Version(String name, int protocol) {
-        }
-
-        @Mapping("a")
-        public String getName() {
+        @Constructor
+        public static Version create(String name, int protocol) {
             return null;
         }
 
+        @Mapping("a")
+        public abstract String getName();
+
         @Mapping("b")
-        public int getProtocol() {
-            return 0;
-        }
+        public abstract int getProtocol();
 
     }
 

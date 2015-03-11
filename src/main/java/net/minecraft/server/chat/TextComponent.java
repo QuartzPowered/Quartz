@@ -26,12 +26,15 @@
  */
 package net.minecraft.server.chat;
 
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Constructor;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("fb")
-public class TextComponent extends BaseComponent {
+public abstract class TextComponent extends BaseComponent {
 
-    public TextComponent(String text) {
+    @Constructor
+    public static TextComponent create(String text) {
+        return null;
     }
 
 }

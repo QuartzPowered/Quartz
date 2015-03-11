@@ -27,8 +27,8 @@
 package net.minecraft.server.network.packet.handshake;
 
 import net.minecraft.server.network.packet.Packet;
-import net.minecrell.quartz.launch.mappings.Accessible;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Accessible;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("jd")
 public abstract class PacketC00Handshake implements Packet {

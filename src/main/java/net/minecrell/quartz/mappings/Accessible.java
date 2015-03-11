@@ -24,14 +24,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server.chat;
 
-import net.minecrell.quartz.mappings.Mapping;
+package net.minecrell.quartz.mappings;
 
-@Mapping("ev")
-public interface ChatComponent extends Iterable<ChatComponent> {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    @Mapping("c")
-    String toUnformattedText();
+@Retention(RetentionPolicy.CLASS)
+@Target({
+        ElementType.TYPE,
+        ElementType.METHOD,
+        ElementType.FIELD
+})
+public @interface Accessible {
 
 }

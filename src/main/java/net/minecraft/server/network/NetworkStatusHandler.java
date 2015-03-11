@@ -28,7 +28,7 @@ package net.minecraft.server.network;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.handler.StatusHandler;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("lq")
 public abstract class NetworkStatusHandler implements StatusHandler {

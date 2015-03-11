@@ -24,8 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-package net.minecrell.quartz.launch.mappings;
+package net.minecrell.quartz.mappings;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -34,12 +33,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.CLASS)
 @Target({
-        ElementType.TYPE,
-        ElementType.METHOD,
-        ElementType.FIELD
+        ElementType.METHOD
 })
-public @interface Mapping {
-
-    String value() default "";
+public @interface Constructor {
 
 }

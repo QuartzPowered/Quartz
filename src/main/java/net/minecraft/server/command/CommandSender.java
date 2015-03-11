@@ -28,7 +28,7 @@ package net.minecraft.server.command;
 
 import net.minecraft.server.block.BlockLocation;
 import net.minecraft.server.chat.ChatComponent;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecrell.quartz.mappings.Mapping;
 
 @Mapping("n")
 public interface CommandSender {
