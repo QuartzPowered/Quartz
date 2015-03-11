@@ -27,14 +27,18 @@
 package net.minecrell.quartz.launch;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.apache.commons.lang3.ArrayUtils.toArray;
 
 import com.google.common.base.Throwables;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecrell.quartz.launch.mappings.Mappings;
 import net.minecrell.quartz.launch.mappings.MappingsLoader;
 import net.minecrell.quartz.launch.mappings.MappingsParser;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.launch.MixinBootstrap;
@@ -62,12 +66,23 @@ public final class QuartzTweaker implements ITweaker {
         return serverJar;
     }
 
+    private boolean gui;
+
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
         Path gamePath = gameDir != null ? gameDir.toPath() : Paths.get("");
         QuartzLaunch.initialize(gamePath);
         serverJar = gamePath.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL);
         checkState(Files.exists(serverJar), "Failed to load server JAR");
+
+        if (args != null && !args.isEmpty()) {
+            OptionParser parser = new OptionParser();
+            parser.allowsUnrecognizedOptions();
+            parser.accepts("gui");
+
+            OptionSet options = parser.parse(args.toArray(new String[args.size()]));
+            gui = options.has("gui");
+        }
     }
 
     @Override
@@ -159,6 +174,7 @@ public final class QuartzTweaker implements ITweaker {
 
     @Override
     public String[] getLaunchArguments() {
-        return new String[]{"nogui"};
+        return gui ? ArrayUtils.EMPTY_STRING_ARRAY : toArray("nogui");
     }
+
 }
