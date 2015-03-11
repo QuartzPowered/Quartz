@@ -24,22 +24,47 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server.command;
+package net.minecrell.quartz.mixin;
 
-import net.minecraft.server.block.BlockLocation;
-import net.minecraft.server.chat.ChatComponent;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import static net.minecraft.server.DedicatedServer.CONSOLE_HANDLER;
 
-@Mapping("n")
-public interface CommandSender {
+import jline.console.ConsoleReader;
+import net.minecraft.server.DedicatedServer;
+import net.minecrell.quartz.ConsoleCommandCompleter;
+import net.minecrell.quartz.launch.console.QuartzConsole;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
-    @Mapping("e_")
-    String getName();
+import java.io.IOException;
 
-    @Mapping("c")
-    BlockLocation getLocation();
+@Mixin(targets = CONSOLE_HANDLER)
+public abstract class MixinConsoleHandler extends Thread {
 
-    @Mapping("a")
-    void sendMessage(ChatComponent message);
+    @Shadow
+    private DedicatedServer a;
+
+    @Overwrite @Override
+    public void run() {
+        final ConsoleReader reader = QuartzConsole.getReader();
+        reader.addCompleter(new ConsoleCommandCompleter(a));
+
+        String line;
+
+        try {
+            while (!a.isStopped() && a.isRunning()) {
+                line = reader.readLine("> ");
+
+                if (line != null) {
+                    line = line.trim();
+                    if (line.length() > 0) {
+                        a.queueCommand(line, a);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            DedicatedServer.logger.error("Failed to handle console input", e);
+        }
+    }
 
 }

@@ -26,11 +26,21 @@
  */
 package net.minecraft.server;
 
+import net.minecraft.server.command.CommandSender;
 import net.minecrell.quartz.launch.mappings.Mapping;
+import org.apache.logging.log4j.Logger;
 
 @Mapping("kp")
 public abstract class DedicatedServer extends MinecraftServer {
 
     public static final String DEDICATED_SERVER = "Lnet/minecraft/server/DedicatedServer;";
+
+    public static final String CONSOLE_HANDLER = "net/minecraft/server/DedicatedServer$2";
+
+    @Mapping("k")
+    public static final Logger logger = null;
+
+    @Mapping("a")
+    public abstract void queueCommand(String commandLine, CommandSender sender);
 
 }

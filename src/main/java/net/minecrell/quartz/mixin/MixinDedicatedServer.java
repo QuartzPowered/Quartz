@@ -29,6 +29,7 @@ package net.minecrell.quartz.mixin;
 
 import static net.minecraft.server.DedicatedServer.DEDICATED_SERVER;
 
+import jline.console.completer.Completer;
 import net.minecraft.server.DedicatedServer;
 import net.minecraft.server.MinecraftServer;
 import net.minecrell.quartz.Quartz;
@@ -40,7 +41,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DedicatedServer.class)
-public abstract class MixinDedicatedServer extends MinecraftServer {
+public abstract class MixinDedicatedServer extends MinecraftServer implements Completer {
 
     @Inject(method = "startServer", at = @At(value = "INVOKE_STRING", target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V",
             args = {"ldc=Loading properties"}, shift = At.Shift.BY, by = -2, remap = false))

@@ -172,7 +172,7 @@ public class Mappings {
         // We may have no name for the inner class directly, but it should be still part of the outer class
         int innerClassPos = className.lastIndexOf('$');
         if (innerClassPos >= 0) {
-            name = classes.get(className.substring(0, innerClassPos));
+            name = map(className.substring(0, innerClassPos));
             if (name != null) {
                 return name + className.substring(innerClassPos);
             }
@@ -190,7 +190,7 @@ public class Mappings {
         // We may have no name for the inner class directly, but it should be still part of the outer class
         int innerClassPos = className.lastIndexOf('$');
         if (innerClassPos >= 0) {
-            name = classes.inverse().get(className.substring(0, innerClassPos));
+            name = unmap(className.substring(0, innerClassPos));
             if (name != null) {
                 return name + className.substring(innerClassPos);
             }

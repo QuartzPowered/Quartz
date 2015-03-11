@@ -26,14 +26,19 @@
  */
 package net.minecraft.server;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import net.minecraft.server.block.BlockLocation;
+import net.minecraft.server.command.CommandSender;
 import net.minecraft.server.status.ServerStatusResponse;
 import net.minecraft.server.world.WorldType;
 import net.minecrell.quartz.launch.mappings.Mapping;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
 
 @Mapping
-public abstract class MinecraftServer {
+public abstract class MinecraftServer implements CommandSender {
 
     public static final String MINECRAFT_SERVER = "Lnet/minecraft/server/MinecraftServer;";
 
@@ -58,6 +63,12 @@ public abstract class MinecraftServer {
 
     public static final String loadFavicon = "loadFavicon(Lnet/minecraft/server/status/ServerStatusResponse;)V";
 
+    @Mapping("u")
+    public abstract boolean isRunning();
+
+    @Mapping("an")
+    public abstract boolean isStopped();
+
     @Mapping("a")
     protected abstract void stop(CrashReport crash);
 
@@ -70,5 +81,11 @@ public abstract class MinecraftServer {
 
     @Mapping("aF")
     public abstract ServerStatusResponse getStatusResponse();
+
+    @Mapping("a")
+    public abstract List<String> getTabCompletions(CommandSender sender, String input, BlockLocation location);
+
+    @Mapping("a")
+    public abstract <V> ListenableFuture<V> scheduleInMainThread(Callable<V> task);
 
 }

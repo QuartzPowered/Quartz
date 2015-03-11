@@ -4,6 +4,8 @@
     "package": "net.minecrell.quartz.mixin",
     "refmap": "mixins.quartz.refmap.json",
     "server": [
+        "MixinBootstrap",
+        "MixinConsoleHandler",
         "MixinDedicatedServer",
         "MixinGameProfile",
         "MixinMinecraftServer",

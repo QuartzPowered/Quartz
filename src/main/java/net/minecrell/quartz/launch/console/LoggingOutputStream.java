@@ -24,22 +24,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server.command;
+package net.minecrell.quartz.launch.console;
 
-import net.minecraft.server.block.BlockLocation;
-import net.minecraft.server.chat.ChatComponent;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
-@Mapping("n")
-public interface CommandSender {
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-    @Mapping("e_")
-    String getName();
+public class LoggingOutputStream extends ByteArrayOutputStream {
 
-    @Mapping("c")
-    BlockLocation getLocation();
+    private static final String SEPARATOR = System.getProperty("line.separator");
+    private final Logger logger;
+    private final Level level;
 
-    @Mapping("a")
-    void sendMessage(ChatComponent message);
+    public LoggingOutputStream(Logger logger, Level level) {
+        this.logger = logger;
+        this.level = level;
+    }
+
+    @Override
+    public void flush() throws IOException {
+        String message = toString();
+        super.reset();
+
+        if (!message.isEmpty() && !message.equals(SEPARATOR)) {
+            logger.log(level, message);
+        }
+    }
 
 }

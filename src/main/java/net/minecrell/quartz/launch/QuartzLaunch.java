@@ -41,14 +41,13 @@ public final class QuartzLaunch {
 
     @Nullable private static Path gameDir;
 
-    public static void initialize(Path gameDir) {
-        QuartzLaunch.gameDir = requireNonNull(gameDir, "gameDir");
-        // TODO: Options
-    }
-
     public static Path getGameDirectory() {
         checkState(gameDir != null, "Quartz was not initialized");
         return gameDir;
+    }
+
+    public static void initialize(Path gameDir) {
+        QuartzLaunch.gameDir = requireNonNull(gameDir, "gameDir");
     }
 
 }

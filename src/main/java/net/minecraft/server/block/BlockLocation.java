@@ -24,22 +24,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server.command;
+package net.minecraft.server.block;
 
-import net.minecraft.server.block.BlockLocation;
-import net.minecraft.server.chat.ChatComponent;
 import net.minecrell.quartz.launch.mappings.Mapping;
 
-@Mapping("n")
-public interface CommandSender {
-
-    @Mapping("e_")
-    String getName();
-
-    @Mapping("c")
-    BlockLocation getLocation();
-
-    @Mapping("a")
-    void sendMessage(ChatComponent message);
+@Mapping("ck")
+public abstract class BlockLocation {
 
 }

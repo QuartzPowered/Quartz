@@ -52,6 +52,9 @@ dependencies {
         transitive = false
     }
 
+    // Console
+    compile 'jline:jline:2.12.1'
+
     runtime 'org.apache.logging.log4j:log4j-slf4j-impl:2.0-beta9'
 }
 

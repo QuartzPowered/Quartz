@@ -24,22 +24,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server.command;
+package net.minecrell.quartz.mixin;
 
-import net.minecraft.server.block.BlockLocation;
-import net.minecraft.server.chat.ChatComponent;
-import net.minecrell.quartz.launch.mappings.Mapping;
+import net.minecraft.server.Bootstrap;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 
-@Mapping("n")
-public interface CommandSender {
+@Mixin(Bootstrap.class)
+public abstract class MixinBootstrap {
 
-    @Mapping("e_")
-    String getName();
-
-    @Mapping("c")
-    BlockLocation getLocation();
-
-    @Mapping("a")
-    void sendMessage(ChatComponent message);
+    @Overwrite
+    private static void redirectOutputToLogger() {
+        // We do that on our own
+    }
 
 }

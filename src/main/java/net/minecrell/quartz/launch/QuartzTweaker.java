@@ -35,6 +35,7 @@ import joptsimple.OptionSet;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecrell.quartz.launch.console.QuartzConsole;
 import net.minecrell.quartz.launch.mappings.Mappings;
 import net.minecrell.quartz.launch.mappings.MappingsLoader;
 import net.minecrell.quartz.launch.mappings.MappingsParser;
@@ -71,18 +72,38 @@ public final class QuartzTweaker implements ITweaker {
     @Override
     public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile) {
         Path gamePath = gameDir != null ? gameDir.toPath() : Paths.get("");
-        QuartzLaunch.initialize(gamePath);
         serverJar = gamePath.resolve("bin").resolve(QuartzMain.MINECRAFT_SERVER_LOCAL);
         checkState(Files.exists(serverJar), "Failed to load server JAR");
+
+        boolean jline = true;
 
         if (args != null && !args.isEmpty()) {
             OptionParser parser = new OptionParser();
             parser.allowsUnrecognizedOptions();
             parser.accepts("gui");
+            parser.accepts("nojline"); // TODO: Naming
 
             OptionSet options = parser.parse(args.toArray(new String[args.size()]));
             gui = options.has("gui");
+            jline = !options.has("nojline");
         }
+
+        QuartzLaunch.initialize(gamePath);
+
+        // Initialize jline
+        logger.debug("Initializing JLine...");
+        try {
+            QuartzConsole.initialize(jline);
+        } catch (Throwable t) {
+            logger.error("Failed to initialize fancy console", t);
+            try {
+                QuartzConsole.initializeFallback();
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to initialize terminal", e);
+            }
+        }
+
+        QuartzConsole.start();
     }
 
     @Override
@@ -108,6 +129,10 @@ public final class QuartzTweaker implements ITweaker {
             loader.addClassLoaderExclusion("com.sun.");
             loader.addClassLoaderExclusion("oshi.");
             loader.addClassLoaderExclusion("io.netty.");
+
+            // Console
+            loader.addClassLoaderExclusion("jline.");
+            loader.addClassLoaderExclusion("org.fusesource.");
 
             // Some libraries shouldn't get transformed, don't even give the chance for that
             loader.addTransformerExclusion("joptsimple.");
