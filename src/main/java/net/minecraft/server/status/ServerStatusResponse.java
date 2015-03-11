@@ -26,9 +26,122 @@
  */
 package net.minecraft.server.status;
 
+import com.mojang.authlib.GameProfile;
+import net.minecraft.server.chat.ChatComponent;
 import net.minecrell.quartz.launch.mappings.Mapping;
 
 @Mapping("jt")
-public abstract class ServerStatusResponse {
+public class ServerStatusResponse {
+
+    @Mapping("a")
+    private ChatComponent description;
+
+    @Mapping("b")
+    private Players players;
+
+    @Mapping("c")
+    private Version version;
+
+    @Mapping("d")
+    private String favicon;
+
+    public ServerStatusResponse() {
+    }
+
+    @Mapping("a")
+    public ChatComponent getDescription() {
+        return description;
+    }
+
+    @Mapping("a")
+    public void setDescription(ChatComponent description) {
+    }
+
+    @Mapping("b")
+    public Players getPlayers() {
+        return null;
+    }
+
+    @Mapping("a")
+    public void setPlayers(Players players) {
+    }
+
+    @Mapping("c")
+    public Version getVersion() {
+        return null;
+    }
+
+    @Mapping("a")
+    public void setVersion(Version version) {
+    }
+
+    @Mapping("d")
+    public String getFavicon() {
+        return null;
+    }
+
+    @Mapping("a")
+    public void setFavicon(String favicon) {
+    }
+
+    @Mapping("jt$a")
+    public static class Players {
+
+        @Mapping("a")
+        private final int max = 0;
+
+        @Mapping("b")
+        private final int online = 0;
+
+        @Mapping("c")
+        private GameProfile[] players;
+
+        public Players(int max, int online) {
+        }
+
+        @Mapping("a")
+        public int getMax() {
+            return 0;
+        }
+
+        @Mapping("b")
+        public int getOnline() {
+            return 0;
+        }
+
+        @Mapping("c")
+        public GameProfile[] getPlayers() {
+            return null;
+        }
+
+        @Mapping("a")
+        public void setPlayers(GameProfile[] players) {
+        }
+
+    }
+
+    @Mapping("jt$c")
+    public static class Version {
+
+        @Mapping("a")
+        private final String name = null;
+
+        @Mapping("b")
+        private final int protocol = 0;
+
+        public Version(String name, int protocol) {
+        }
+
+        @Mapping("a")
+        public String getName() {
+            return null;
+        }
+
+        @Mapping("b")
+        public int getProtocol() {
+            return 0;
+        }
+
+    }
 
 }

@@ -33,17 +33,21 @@ import static net.minecraft.server.MinecraftServer.loadFavicon;
 import static net.minecraft.server.MinecraftServer.stop;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.chat.TextComponent;
+import net.minecraft.server.command.CommandSender;
 import net.minecrell.quartz.Quartz;
+import org.spongepowered.api.Server;
 import org.spongepowered.api.event.state.ServerStartedEvent;
 import org.spongepowered.api.event.state.ServerStoppedEvent;
 import org.spongepowered.api.event.state.ServerStoppingEvent;
+import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
-public abstract class MixinMinecraftServer {
+public abstract class MixinMinecraftServer implements Server, CommandSource, CommandSender {
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = MINECRAFT_SERVER + loadFavicon, shift = At.Shift.AFTER))
     public void onServerStarted(CallbackInfo ci) {
@@ -58,6 +62,18 @@ public abstract class MixinMinecraftServer {
     @Inject(method = "run", at = @At(value = "INVOKE", target = MINECRAFT_SERVER + exit))
     public void onServerStopped(CallbackInfo ci) {
         Quartz.instance.postState(ServerStoppedEvent.class);
+    }
+
+    @Override
+    public void sendMessage(String... messages) {
+        for (String message : messages) {
+            sendMessage(new TextComponent(message));
+        }
+    }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        return true;
     }
 
 }

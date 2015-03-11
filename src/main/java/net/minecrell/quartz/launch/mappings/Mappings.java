@@ -98,6 +98,7 @@ public class Mappings {
 
         for (ClassNode classNode : mappingClasses) {
             String className = classNode.name.replace('/', '.');
+            String internalName = unmap(classNode.name);
 
             ParsedAnnotation annotation = MappingsParser.getAnnotation(classNode, ACCESSIBLE);
             if (annotation != null) {
@@ -112,7 +113,7 @@ public class Mappings {
                 if (annotation != null) {
                     String mapping = annotation.getString("value", "");
                     if (!mapping.isEmpty()) {
-                        methods.put(classNode.name, mapping + remapper.mapMethodDesc(methodNode.desc), methodNode.name);
+                        methods.put(internalName, mapping + remapper.mapMethodDesc(methodNode.desc), methodNode.name);
                     }
                 }
 
@@ -130,7 +131,7 @@ public class Mappings {
                 if (annotation != null) {
                     String mapping = annotation.getString("value", "");
                     if (!mapping.isEmpty()) {
-                        fields.put(classNode.name, mapping + ':' + remapper.mapDesc(fieldNode.desc), fieldNode.name);
+                        fields.put(internalName, mapping + ':' + remapper.mapDesc(fieldNode.desc), fieldNode.name);
                     }
                 }
 

@@ -24,51 +24,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server;
+package net.minecraft.server.network;
 
-import net.minecraft.server.status.ServerStatusResponse;
-import net.minecraft.server.world.WorldType;
+import io.netty.channel.SimpleChannelInboundHandler;
+import net.minecraft.server.chat.ChatComponent;
+import net.minecraft.server.network.packet.Packet;
 import net.minecrell.quartz.launch.mappings.Mapping;
 
-import java.io.IOException;
+import java.net.SocketAddress;
 
-@Mapping
-public abstract class MinecraftServer {
+@Mapping("el")
+public abstract class NetworkManager extends SimpleChannelInboundHandler<Packet> {
 
-    public static final String MINECRAFT_SERVER = "Lnet/minecraft/server/MinecraftServer;";
-
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
+    @Mapping("b")
+    public abstract SocketAddress getRemoteAddress();
 
     @Mapping("a")
-    public abstract void setManager(ServerManager manager);
-
-    public static final String setManager = "setManager(Lnet/minecraft/server/ServerManager;)V";
+    public abstract void sendPacket(Packet packet);
 
     @Mapping("a")
-    protected abstract void loadWorlds(String folder1, String folder2, long seed, WorldType type, String settings);
-
-    public static final String loadWorlds = "loadWorlds(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/server/world/WorldType;"
-            + "Ljava/lang/String;)V";
-
-
-    @Mapping("a")
-    private void loadFavicon(ServerStatusResponse response) {
-    }
-
-    public static final String loadFavicon = "loadFavicon(Lnet/minecraft/server/status/ServerStatusResponse;)V";
-
-    @Mapping("a")
-    protected abstract void stop(CrashReport crash);
-
-    public static final String stop = "stop(Lnet/minecraft/server/CrashReport;)V";
-
-    @Mapping("y")
-    protected abstract void exit();
-
-    public static final String exit = "exit()V";
-
-    @Mapping("aF")
-    public abstract ServerStatusResponse getStatusResponse();
+    public abstract void disconnect(ChatComponent reason);
 
 }

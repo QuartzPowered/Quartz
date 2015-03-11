@@ -16,7 +16,7 @@
         </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
-        <Root level="INFO">
+        <Root level="ALL">
             <filters>
                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL"/>
             </filters>

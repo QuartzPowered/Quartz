@@ -24,51 +24,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package net.minecraft.server;
+package net.minecraft.server.network;
 
-import net.minecraft.server.status.ServerStatusResponse;
-import net.minecraft.server.world.WorldType;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecrell.quartz.launch.mappings.Mapping;
+import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-
-@Mapping
-public abstract class MinecraftServer {
-
-    public static final String MINECRAFT_SERVER = "Lnet/minecraft/server/MinecraftServer;";
-
-    @Mapping("i")
-    protected abstract boolean startServer() throws IOException;
+@Mapping("lk")
+public abstract class LegacyPingHandler extends ChannelInboundHandlerAdapter {
 
     @Mapping("a")
-    public abstract void setManager(ServerManager manager);
+    private static final Logger logger = null;
 
-    public static final String setManager = "setManager(Lnet/minecraft/server/ServerManager;)V";
-
-    @Mapping("a")
-    protected abstract void loadWorlds(String folder1, String folder2, long seed, WorldType type, String settings);
-
-    public static final String loadWorlds = "loadWorlds(Ljava/lang/String;Ljava/lang/String;JLnet/minecraft/server/world/WorldType;"
-            + "Ljava/lang/String;)V";
-
+    @Mapping("b")
+    private NetworkSystem system;
 
     @Mapping("a")
-    private void loadFavicon(ServerStatusResponse response) {
+    private void writeAndFlush(ChannelHandlerContext ctx, ByteBuf data) {
     }
 
-    public static final String loadFavicon = "loadFavicon(Lnet/minecraft/server/status/ServerStatusResponse;)V";
-
     @Mapping("a")
-    protected abstract void stop(CrashReport crash);
-
-    public static final String stop = "stop(Lnet/minecraft/server/CrashReport;)V";
-
-    @Mapping("y")
-    protected abstract void exit();
-
-    public static final String exit = "exit()V";
-
-    @Mapping("aF")
-    public abstract ServerStatusResponse getStatusResponse();
+    private ByteBuf writeString(String string) {
+        return null;
+    }
 
 }

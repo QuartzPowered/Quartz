@@ -39,6 +39,7 @@ import org.spongepowered.api.block.meta.SkullType;
 import org.spongepowered.api.effect.particle.ParticleEffectBuilder;
 import org.spongepowered.api.effect.particle.ParticleType;
 import org.spongepowered.api.effect.sound.SoundType;
+import org.spongepowered.api.entity.EntityInteractionType;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.hanging.art.Art;
 import org.spongepowered.api.entity.living.animal.DyeColor;
@@ -62,6 +63,7 @@ import org.spongepowered.api.status.Favicon;
 import org.spongepowered.api.util.rotation.Rotation;
 import org.spongepowered.api.world.DimensionType;
 import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.difficulty.Difficulty;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -380,4 +382,25 @@ public class QuartzGameRegistry implements GameRegistry {
     public RecipeRegistry getRecipeRegistry() {
         throw new NotImplementedException("TODO");
     }
+
+    @Override
+    public Collection<Difficulty> getDifficulties() {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Optional<Difficulty> getDifficulty(String name) {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Collection<EntityInteractionType> getEntityInteractionTypes() {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Optional<EntityInteractionType> getEntityInteractionType(String name) {
+        throw new NotImplementedException("TODO");
+    }
+
 }
