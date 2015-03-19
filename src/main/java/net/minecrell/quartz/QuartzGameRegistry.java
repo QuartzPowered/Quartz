@@ -32,6 +32,10 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.spongepowered.api.GameDictionary;
 import org.spongepowered.api.GameProfile;
 import org.spongepowered.api.GameRegistry;
+import org.spongepowered.api.attribute.Attribute;
+import org.spongepowered.api.attribute.AttributeBuilder;
+import org.spongepowered.api.attribute.AttributeModifierBuilder;
+import org.spongepowered.api.attribute.Operation;
 import org.spongepowered.api.block.BlockType;
 import org.spongepowered.api.block.meta.BannerPatternShape;
 import org.spongepowered.api.block.meta.NotePitch;
@@ -400,6 +404,36 @@ public class QuartzGameRegistry implements GameRegistry {
 
     @Override
     public Optional<EntityInteractionType> getEntityInteractionType(String name) {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Optional<Attribute> getAttribute(String name) {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Collection<Attribute> getAttributes() {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Optional<Operation> getOperation(String name) {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Collection<Operation> getOperations() {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public AttributeModifierBuilder getAttributeModifierBuilder() {
+        throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public AttributeBuilder getAttributeBuilder() {
         throw new NotImplementedException("TODO");
     }
 
