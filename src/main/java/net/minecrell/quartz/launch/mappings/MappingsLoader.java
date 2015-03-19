@@ -27,28 +27,27 @@
 
 package net.minecrell.quartz.launch.mappings;
 
-import static java.util.Objects.requireNonNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
 
-import net.minecrell.quartz.mappings.Mapping;
-import org.apache.commons.lang3.StringUtils;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableTable;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import net.minecrell.quartz.launch.util.Methods;
 import org.apache.logging.log4j.Logger;
-import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Set;
 
 public final class MappingsLoader {
 
@@ -60,57 +59,80 @@ public final class MappingsLoader {
     private static final String MAPPINGS_DIR = "mappings/";
 
     public static Mappings load(Logger logger) throws IOException {
-        URI source;
-        try {
-            source = requireNonNull(Mapping.class.getProtectionDomain().getCodeSource(), "Unable to find class source").getLocation().toURI();
-        } catch (URISyntaxException e) {
-            throw new IOException("Failed to find class source", e);
+        InputStream in = MappingsLoader.class.getResourceAsStream("/mappings.json");
+        checkState(in != null, "Failed to find mappings in mappings.json. Make sure you have the annotation processor configured properly");
+
+        final Gson gson = new Gson();
+        final Type mappingsType = new TypeToken<Map<String, MappingInfo>>(){}.getType();
+
+        Map<String, MappingInfo> mappings;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            mappings = gson.fromJson(reader, mappingsType);
         }
 
-        Path location = Paths.get(source);
-        logger.debug("Mappings location: {}", location);
+        return fromJson(mappings);
+    }
 
-        List<ClassNode> mappingClasses = new ArrayList<>();
+    private static Mappings fromJson(Map<String, MappingInfo> mappings) {
+        ImmutableBiMap.Builder<String, String> classes = ImmutableBiMap.builder();
+        ImmutableTable.Builder<String, String, String> methods = ImmutableTable.builder();
+        ImmutableTable.Builder<String, String, String> fields = ImmutableTable.builder();
 
-        // Load the classes from the source
-        if (Files.isDirectory(location)) {
-            // We're probably in development environment or something similar
-            // Search for the class files
-            Files.walkFileTree(location.resolve(PACKAGE), new SimpleFileVisitor<Path>() {
+        ImmutableTable.Builder<String, String, AccessMapping> accessMappings = ImmutableTable.builder();
 
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (file.getFileName().toString().endsWith(".class")) {
-                        try (InputStream in = Files.newInputStream(file)) {
-                            ClassNode classNode = MappingsParser.loadClassStructure(in);
-                            mappingClasses.add(classNode);
-                        }
-                    }
+        ImmutableMultimap.Builder<String, MethodNode> constructors = ImmutableMultimap.builder();
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } else {
-            // Go through the JAR file
-            try (ZipFile zip = new ZipFile(location.toFile())) {
-                Enumeration<? extends ZipEntry> entries = zip.entries();
-                while (entries.hasMoreElements()) {
-                    ZipEntry entry = entries.nextElement();
-                    String name = StringUtils.removeStart(entry.getName(), MAPPINGS_DIR);
-                    if (entry.isDirectory() || !name.endsWith(".class") || !name.startsWith(PACKAGE_PREFIX)) {
-                        continue;
-                    }
+        for (Map.Entry<String, MappingInfo> entry : mappings.entrySet()) {
+            String internalName = entry.getKey();
+            String className = internalName.replace('/', '.');
 
-                    // Ok, we found something
-                    try (InputStream in = zip.getInputStream(entry)) {
-                        ClassNode classNode = MappingsParser.loadClassStructure(in);
-                        mappingClasses.add(classNode);
-                    }
+            MappingInfo mapping = entry.getValue();
+            String mappedName = mapping.name;
+            if (mappedName != null) {
+                classes.put(mappedName, internalName);
+            } else {
+                mappedName = entry.getKey();
+            }
+
+            if (mapping.methods != null) {
+                fillTable(methods, mappedName, mapping.methods);
+            }
+
+            if (mapping.fields != null) {
+                fillTable(fields, mappedName, mapping.fields);
+            }
+
+            if (mapping.access != null) {
+                fillTable(accessMappings, className, mapping.access);
+            }
+
+            if (mapping.constructors != null) {
+                for (String constructor : mapping.constructors) {
+                    MethodNode methodNode = new MethodNode(ACC_PUBLIC | ACC_STATIC, "create", constructor, null, null);
+                    Methods.visitConstructor(methodNode, internalName);
+                    constructors.put(className, methodNode);
                 }
             }
         }
 
-        return new Mappings(mappingClasses);
+        return new Mappings(classes.build(), methods.build(), fields.build(), accessMappings.build(), constructors.build());
+    }
+
+    private static <R, C, V> void fillTable(ImmutableTable.Builder<R, C, V> builder, R row, Map<C, V> values) {
+        for (Map.Entry<C, V> entry : values.entrySet()) {
+            builder.put(row, entry.getKey(), entry.getValue());
+        }
+    }
+
+    private static class MappingInfo {
+
+        private String name;
+        private Map<String, String> methods;
+        private Map<String, String> fields;
+        private Map<String, AccessMapping> access;
+        private Set<String> constructors;
+
     }
 
 }

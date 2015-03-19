@@ -11,10 +11,6 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        name = 'minecraft'
-        url = 'https://libraries.minecraft.net'
-    }
-    maven {
         name = 'sponge'
         url = 'http://repo.spongepowered.org/maven'
     }
@@ -24,16 +20,17 @@ repositories {
     }
 }
 
+version = 'mc1.8.3-SNAPSHOT'
+
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
-
-version = 'mc1.8.3-SNAPSHOT'
 
 mainClassName = 'net.minecrell.quartz.launch.QuartzMain'
 
 apply from: file('minecraft.gradle')
 
 dependencies {
+    compile project(':mappings')
     compile(project(':SpongeAPI')) {
         exclude module: 'guava'
         exclude module: 'jsr305'
@@ -59,7 +56,8 @@ dependencies {
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs += ['-Xlint:all', '-Xlint:-deprecation', '-proc:none']
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-deprecation',
+                             '-processor', 'net.minecrell.quartz.mappings.processor.MappingsGeneratorProcessor']
     options.encoding = 'UTF-8'
 }
 

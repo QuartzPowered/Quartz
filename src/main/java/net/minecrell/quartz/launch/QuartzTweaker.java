@@ -38,7 +38,6 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecrell.quartz.launch.console.QuartzConsole;
 import net.minecrell.quartz.launch.mappings.Mappings;
 import net.minecrell.quartz.launch.mappings.MappingsLoader;
-import net.minecrell.quartz.launch.mappings.MappingsParser;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -114,7 +113,7 @@ public final class QuartzTweaker implements ITweaker {
             byte[] mainClass = loader.getClassBytes(MAIN);
 
             // Check if we're running in development environment
-            if (mainClass != null && MappingsParser.isMappingsClass(mainClass)) {
+            if (mainClass != null && mainClass.length < 30000) {
                 // We need to replace the main class because it clashes with our mapping
                 logger.debug("Enabling main class transformer...");
                 loader.registerTransformer("net.minecrell.quartz.launch.transformers.MainClassTransformer");

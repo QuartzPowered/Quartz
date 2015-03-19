@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+}
+
+version = '1.8.3-SNAPSHOT'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+apply from: rootProject.file('minecraft.gradle')
+
+dependencies {
+    compile 'org.ow2.asm:asm-debug-all:5.0.3'
+}

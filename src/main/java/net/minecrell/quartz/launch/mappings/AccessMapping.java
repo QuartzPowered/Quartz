@@ -32,24 +32,24 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class AccessMapping {
 
-    private final Access access;
-    private final boolean finalModifier;
+    private final AccessModifier access;
+    private final boolean isFinal;
 
-    public AccessMapping(Access access, boolean finalModifier) {
+    public AccessMapping(AccessModifier access, boolean finalModifier) {
         this.access = access;
-        this.finalModifier = finalModifier;
+        this.isFinal = finalModifier;
     }
 
-    public Access getAccess() {
+    public AccessModifier getAccess() {
         return access;
     }
 
     public boolean isFinal() {
-        return finalModifier;
+        return isFinal;
     }
 
     public int transform(int access) {
-        return Access.setFinal(this.access.transform(access), finalModifier);
+        return AccessModifier.setFinal(this.access.transform(access), isFinal);
     }
 
     public void transform(ClassNode classNode) {
@@ -62,22 +62,6 @@ public class AccessMapping {
 
     public void transform(FieldNode fieldNode) {
         fieldNode.access = transform(fieldNode.access);
-    }
-
-    public static AccessMapping of(int access) {
-        return new AccessMapping(Access.of(access), Access.isFinal(access));
-    }
-
-    public static AccessMapping of(ClassNode classNode) {
-        return of(classNode.access);
-    }
-
-    public static AccessMapping of(MethodNode methodNode) {
-        return of(methodNode.access);
-    }
-
-    public static AccessMapping of(FieldNode fieldNode) {
-        return of(fieldNode.access);
     }
 
 }

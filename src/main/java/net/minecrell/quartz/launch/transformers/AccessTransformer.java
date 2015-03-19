@@ -29,8 +29,8 @@ package net.minecrell.quartz.launch.transformers;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
-import net.minecrell.quartz.launch.mappings.Access;
 import net.minecrell.quartz.launch.mappings.AccessMapping;
+import net.minecrell.quartz.launch.mappings.AccessModifier;
 import net.minecrell.quartz.launch.mappings.Mappings;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -77,13 +77,13 @@ public class AccessTransformer extends MappingTreeTransformer {
                     if (methodNode.name.length() + methodNode.desc.length() != len
                             || !(target.startsWith(methodNode.name) && target.endsWith(methodNode.desc))) continue;
 
-                    boolean wasPrivate = Access.PRIVATE.is(methodNode.access);
+                    boolean wasPrivate = AccessModifier.PRIVATE.is(methodNode.access);
                     accessMapping.transform(methodNode);
 
                     // Constructors always use INVOKESPECIAL
                     // If we changed from private to something else we need to replace all INVOKESPECIAL calls to this method with INVOKEVIRTUAL
                     // So that overridden methods will be called. Only need to scan this class, because obviously the method was private.
-                    if (wasPrivate && accessMapping.getAccess() != Access.PRIVATE && !methodNode.name.equals("<init>")) {
+                    if (wasPrivate && accessMapping.getAccess() != AccessModifier.PRIVATE && !methodNode.name.equals("<init>")) {
                         if (overridable == null) {
                             overridable = new ArrayList<>(3);
                         }

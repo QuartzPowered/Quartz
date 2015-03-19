@@ -26,24 +26,12 @@
  */
 package net.minecrell.quartz.launch.mappings;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
-import static net.minecrell.quartz.launch.mappings.MappingsParser.ACCESSIBLE;
-import static net.minecrell.quartz.launch.mappings.MappingsParser.CONSTRUCTOR;
-import static net.minecrell.quartz.launch.mappings.MappingsParser.MAPPING;
 
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableTable;
-import net.minecrell.quartz.launch.util.Methods;
-import net.minecrell.quartz.launch.util.ParsedAnnotation;
-import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
-
-import java.util.List;
-import java.util.Map;
 
 public class Mappings {
 
@@ -63,105 +51,6 @@ public class Mappings {
         this.fields = requireNonNull(fields, "fields");
         this.constructors = requireNonNull(constructors, "constructors");
         this.accessMappings = requireNonNull(accessMappings, "accessMappings");
-    }
-
-    protected Mappings(List<ClassNode> mappingClasses) {
-        requireNonNull(mappingClasses, "mappingClasses");
-        if (mappingClasses.isEmpty()) {
-            this.classes = ImmutableBiMap.of();
-            this.methods = ImmutableTable.of();
-            this.fields = ImmutableTable.of();
-            this.constructors = ImmutableMultimap.of();
-            this.accessMappings = ImmutableTable.of();
-            return;
-        }
-
-        ImmutableBiMap.Builder<String, String> classes = ImmutableBiMap.builder();
-
-        for (ClassNode classNode : mappingClasses) {
-            ParsedAnnotation annotation = MappingsParser.getAnnotation(classNode, MAPPING);
-            checkState(annotation != null, "Class %s is missing the @Mapping annotation", classNode.name);
-            String mapping = annotation.getString("value", "");
-            if (!mapping.isEmpty()) {
-                classes.put(mapping, classNode.name);
-            }
-        }
-
-        this.classes = classes.build();
-
-        // We need to remap the descriptors of the fields and methods, use ASM for convenience
-        Remapper remapper = new Remapper() {
-
-            @Override
-            public String map(String className) {
-                return unmap(className);
-            }
-        };
-
-        // Load field, method and access mappings
-        ImmutableTable.Builder<String, String, String> methods = ImmutableTable.builder();
-        ImmutableTable.Builder<String, String, String> fields = ImmutableTable.builder();
-        ImmutableMultimap.Builder<String, MethodNode> constructors = ImmutableMultimap.builder();
-        ImmutableTable.Builder<String, String, AccessMapping> accessMappings = ImmutableTable.builder();
-
-        for (ClassNode classNode : mappingClasses) {
-            String className = classNode.name.replace('/', '.');
-            String internalName = unmap(classNode.name);
-
-            ParsedAnnotation annotation = MappingsParser.getAnnotation(classNode, ACCESSIBLE);
-            if (annotation != null) {
-                accessMappings.put(className, "", AccessMapping.of(classNode));
-            }
-
-            for (MethodNode methodNode : classNode.methods) {
-                Map<String, ParsedAnnotation> annotations = MappingsParser.getAnnotations(methodNode);
-
-                annotation = annotations.get(CONSTRUCTOR);
-                if (annotation != null) {
-                    // Generate constructor call code
-                    Methods.visitConstructor(methodNode, classNode.name);
-                    constructors.put(className, methodNode);
-                    continue;
-                }
-
-                // TODO: Validation
-                annotation = annotations.get(MAPPING);
-                if (annotation != null) {
-                    String mapping = annotation.getString("value", "");
-                    if (!mapping.isEmpty()) {
-                        methods.put(internalName, mapping + remapper.mapMethodDesc(methodNode.desc), methodNode.name);
-                    }
-                }
-
-                annotation = annotations.get(ACCESSIBLE);
-                if (annotation != null) {
-                    accessMappings.put(className, methodNode.name + methodNode.desc, AccessMapping.of(methodNode));
-                }
-            }
-
-            for (FieldNode fieldNode : classNode.fields) {
-                Map<String, ParsedAnnotation> annotations = MappingsParser.getAnnotations(fieldNode);
-
-                // TODO: Validation
-                annotation = annotations.get(MAPPING);
-                if (annotation != null) {
-                    String mapping = annotation.getString("value", "");
-                    if (!mapping.isEmpty()) {
-                        fields.put(internalName, mapping + ':' + remapper.mapDesc(fieldNode.desc), fieldNode.name);
-                    }
-                }
-
-                annotation = annotations.get(ACCESSIBLE);
-                if (annotation != null) {
-                    accessMappings.put(className, fieldNode.name, AccessMapping.of(fieldNode));
-                }
-            }
-        }
-
-        this.methods = methods.build();
-        this.fields = fields.build();
-        this.constructors = constructors.build();
-        this.accessMappings = accessMappings.build();
     }
 
     public ImmutableBiMap<String, String> getClasses() {
@@ -185,6 +74,10 @@ public class Mappings {
     }
 
     public String map(String className) {
+        if (className == null) {
+            return null;
+        }
+
         String name = classes.get(className);
         if (name != null) {
             return name;
@@ -193,16 +86,17 @@ public class Mappings {
         // We may have no name for the inner class directly, but it should be still part of the outer class
         int innerClassPos = className.lastIndexOf('$');
         if (innerClassPos >= 0) {
-            name = map(className.substring(0, innerClassPos));
-            if (name != null) {
-                return name + className.substring(innerClassPos);
-            }
+            return map(className.substring(0, innerClassPos)) + className.substring(innerClassPos);
         }
 
         return className; // Unknown class
     }
 
     public String unmap(String className) {
+        if (className == null) {
+            return null;
+        }
+
         String name = classes.inverse().get(className);
         if (name != null) {
             return name;
@@ -211,10 +105,7 @@ public class Mappings {
         // We may have no name for the inner class directly, but it should be still part of the outer class
         int innerClassPos = className.lastIndexOf('$');
         if (innerClassPos >= 0) {
-            name = unmap(className.substring(0, innerClassPos));
-            if (name != null) {
-                return name + className.substring(innerClassPos);
-            }
+            return unmap(className.substring(0, innerClassPos)) + className.substring(innerClassPos);
         }
 
         return className; // Unknown class

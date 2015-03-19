@@ -31,17 +31,17 @@ import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PROTECTED;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 
-public enum Access {
+public enum AccessModifier {
 
     PRIVATE (ACC_PRIVATE),
     PACKAGE_LOCAL (0),
     PROTECTED (ACC_PROTECTED),
     PUBLIC (ACC_PUBLIC);
 
-    private static final Access[] modifiers = values();
+    private static final AccessModifier[] modifiers = values();
     private final int modifier;
 
-    private Access(int modifier) {
+    private AccessModifier(int modifier) {
         this.modifier = modifier;
     }
 
@@ -54,7 +54,7 @@ public enum Access {
     }
 
     public int transform(int access) {
-        Access current = Access.of(access);
+        AccessModifier current = AccessModifier.of(access);
         if (this != current) {
             // Don't lower access
             if (current.compareTo(this) < 0) {
@@ -66,8 +66,8 @@ public enum Access {
         return access;
     }
 
-    public static Access of(int access) {
-        for (Access modifier : modifiers) {
+    public static AccessModifier of(int access) {
+        for (AccessModifier modifier : modifiers) {
             if (modifier.is(access)) {
                 return modifier;
             }

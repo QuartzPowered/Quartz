@@ -1,2 +1,3 @@
 rootProject.name = 'Quartz'
-include 'SpongeAPI'
+include 'SpongeAPI', 'mappings'
+g
